@@ -276,7 +276,6 @@ function VertexField:DrawArrow(obj, data, i, transform, yoffset)
   local left, top, right, bottom = self.aft.aft:GetTexture():GetTextureCoordRect(0)
   if mesh:GetVisible() then
     for j, triangle in ipairs(self.triangles) do 
-      --showcasing (colors with no texture)
       col = 1
       if (not self.settings.meshtexture) then
         col = j/#self.triangles
@@ -306,7 +305,7 @@ function VertexField:subscribe()
   end)
 end
 
-function VertexField:toggleVisible(actor, visible)
+function VertexField:toggleVisible(setting, visible)
   if self.settings.show[actor] ~= nil then
     self.settings.show[actor] = visible
   else
