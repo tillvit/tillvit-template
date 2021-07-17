@@ -21,16 +21,19 @@ This module also has a function to hide all overlay elements and another functio
 	    {1,100,"Beat","outExpo"},
 	    {1,-100,"Tornado","inExpo"},
     }})
+    
     --Activate -100% Beat with an ease length of 
     --2 beats at beat 7 for player 1.
     mod ({7,1,{
 	    {1,-100,"Beat","linear"},
     }})
+    
     --Zoom P2 to 2x with an ease length of 
     --1 beats at beat 8 for player 2.
     mod ({8,2,{
 	    {1,2,"zoom","outSine"},
     }})
+    
     --Hide P1 at beat 0
     action ({0, function()
 	    P1:visible(false)
@@ -53,12 +56,12 @@ This module also has a function to hide all overlay elements and another functio
 	    ...
     }}}
 
-beat: when this mod will activate
-player: which player this mod will apply to (1=P1, 2=P2, defaults to both)
-ease_time: time in beats for easing
-value: value of the mod
-mod: string name of mod applied
-ease: string name of ease used for easing
+beat: when this mod will activate  
+player: which player this mod will apply to (1=P1, 2=P2, defaults to both)  
+ease_time: time in beats for easing  
+value: value of the mod  
+mod: string name of mod applied  
+ease: string name of ease used for easing  
 
 
 
