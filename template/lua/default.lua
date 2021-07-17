@@ -2,7 +2,6 @@ module 'common_aliases'
 module 'modcore'
 module 'utils'
 module 'comboview'
-module 'vertexfield'
 
 setEditor(false)
 setBeatOffset(0)
