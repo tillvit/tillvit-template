@@ -1,3 +1,5 @@
+require({},'utils')
+
 --returns 1 if i is odd and -1 if i is even
 function parity(i) 
   return ((i%2)-0.5)*2

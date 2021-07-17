@@ -1,3 +1,5 @@
+require({'common_aliases'},'modcore')
+
 local currently_active_mods_1 = {};
 local currently_active_mods_2 = {};
 local curmod = 1;

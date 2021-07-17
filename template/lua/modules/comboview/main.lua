@@ -1,3 +1,5 @@
+require({},'comboview')
+
 local p1judg = nil
 local p1combo = nil
 local p2judg = nil

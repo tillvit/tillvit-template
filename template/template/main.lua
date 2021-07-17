@@ -10,6 +10,7 @@ end
 local function setup()
     listener = {}
     continuous = {}
+    imported_modules = {}
     beatOffset = 0
     definecontinuous {function() return GAMESTATE:GetSongBeat() + beatOffset end, 'beat'}
 end
@@ -39,15 +40,24 @@ function add(item)
 end
 
 function setEditor(a) 
-    isEditor = true
+    isEditor = a
 end
 
 function setBeatOffset(a)
     beatOffset = a;
 end
 
+function require(modules, as)
+    for i, module in ipairs(modules) do
+        if imported_modules[module] == nil then
+            msg("Module " .. as .. ' requires the missing module ' .. module)
+        end
+    end
+end
+
 function module(module) 
     assert(loadfile(GAMESTATE:GetCurrentSong():GetSongDir()..'lua/modules/'..module..'/main.lua'))()
+    imported_modules[module] = true
 end
 
 local function init_command(self) 

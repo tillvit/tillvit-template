@@ -1,3 +1,5 @@
+require({},'common_aliases')
+
 scx = SCREEN_CENTER_X
 scy = SCREEN_CENTER_Y
 sw = SCREEN_WIDTH
