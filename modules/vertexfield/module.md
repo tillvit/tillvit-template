@@ -51,7 +51,7 @@ VertexField doesn't work with the following mods:
 
 ## VertexField Class
 
-    VertexField:new(table obj)
+   `VertexField:new(table obj)`
 
 Creates a new VertexField object with the inputs in the table obj. Accepted inputs are: 
 
@@ -60,7 +60,8 @@ Creates a new VertexField object with the inputs in the table obj. Accepted inpu
  - notedata (required): the notedata of the playfield
  - player (required): the number of the player that shall be proxied
  
-  `VertexField:toggleVisible(string setting, bool visible)`
+  `VertexField:toggleVisible(string setting, bool visible)`  
+  
   Sets the visibility of the setting to the boolean given. Valid settings include:
   
  - aft: Draws the a square aft over the playfield. Defaults to false.
@@ -69,14 +70,25 @@ Creates a new VertexField object with the inputs in the table obj. Accepted inpu
  - bones: Draws the bones of the arrow using small white squares. Defaults to false.
  - receptors: Renders the receptors in the same fashion as the arrows. Defaults to false.
  
- `VertexField:drawTexturedMesh(bool b)`
- Toggle if the mesh is textured using an AFT or using a grayscale color scheme. Defaults to true.
-  `VertexField:HidePastReceptors(bool b)`
-Determines whether arrows will be drawn after they have passed the receptors. Defaults to false.
-  `VertexField:SetBoneTransform(function f)`
-Sets the transform function that is used for the arrows.
-`VertexField:SetReceptorTransform(function f)`
-Sets the transform function that is used for the receptors.
+ 
+ `VertexField:drawTexturedMesh(bool b)`  
+ 
+ Toggle if the mesh is textured using an AFT or using a grayscale color scheme. Defaults to true.  
+ 
+ 
+  `VertexField:HidePastReceptors(bool b)`  
+  
+Determines whether arrows will be drawn after they have passed the receptors. Defaults to false. 
+
+
+  `VertexField:SetBoneTransform(function f)`  
+  
+Sets the transform function that is used for the arrows.  
+
+
+`VertexField:SetReceptorTransform(function f)`  
+
+Sets the transform function that is used for the receptors.  
 
 ## Transform functions
 
