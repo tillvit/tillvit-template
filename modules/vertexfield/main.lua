@@ -1,3 +1,5 @@
+dependency ({"common_aliases"}, "vertexfield")
+
 local uniqueaftid = 0
 
 VertexField = {
@@ -30,7 +32,7 @@ local rotates = {0, -math.pi / 2, math.pi / 2, math.pi}
 
 function VertexField:new(a)
     o = {}
-    o.bonedata = a.bones or {{-32, 0}, {0, 32}, {13, 18}, {3, 8}, {30, 8}, {30, -8}, {3, -8}, {13, -18}, {0, -32}};
+    o.bonedata = a.bones or {{-32, 0}, {0, 32}, {14, 19}, {5, 10}, {30, 10}, {30, -10}, {5, -10}, {14, -19}, {0, -32}};
     o.triangles = a.triangles or {{1, 2, 4}, {2, 3, 4}, {1, 4, 7}, {1, 7, 9}, {7, 8, 9}, {4, 6, 7}, {4, 5, 6}};
     o.notedata = a.notedata or {};
     o.playerNum = a.player
@@ -86,6 +88,7 @@ function VertexField:createAft()
                 self:x(scx);
                 self:y(scy);
                 self:visible(true)
+                self:zoom(sh / 480);
             end
         }
     })
@@ -278,8 +281,8 @@ function VertexField:DrawArrow(obj, data, i, transform, yoffset)
 
     for j = 1, #self.bonedata do
         -- position the bones   
-        bones[j]:x(firstAft:GetX() + newbonedata[j][1] * tiny)
-        bones[j]:y(firstAft:GetY() + newbonedata[j][2] * tiny)
+        bones[j]:x(firstAft:GetX() + newbonedata[j][1] * tiny * sh/480)
+        bones[j]:y(firstAft:GetY() + newbonedata[j][2] * tiny * sh/480)
         bones[j]:z(0)
     end
 
@@ -299,6 +302,7 @@ function VertexField:DrawArrow(obj, data, i, transform, yoffset)
     local left, top, right, bottom = self.aft.aft:GetTexture():GetTextureCoordRect(0)
     if mesh:GetVisible() then
         for j, triangle in ipairs(self.triangles) do
+            -- showcasing (colors with no texture)
             col = 1
             if (not self.settings.meshtexture) then
                 col = j / #self.triangles
@@ -306,16 +310,16 @@ function VertexField:DrawArrow(obj, data, i, transform, yoffset)
             -- a lot of characters but it just Does Thing (maps coords on tex to screen based on the position of the bones)
             mesh:SetVertex(j * 3 - 2,
                 {{bones[triangle[1]]:GetX(), bones[triangle[1]]:GetY(), bones[triangle[1]]:GetZ()}, {col, col, col, 1},
-                 {(firstAft:GetX() + tiny * newbonedata[triangle[1]][1]) / sw * right,
-                  (firstAft:GetY() + tiny * newbonedata[triangle[1]][2]) / sh * bottom}})
+                 {(firstAft:GetX() + tiny * sh/480 * newbonedata[triangle[1]][1]) / sw * right,
+                  (firstAft:GetY() + tiny * sh/480 * newbonedata[triangle[1]][2]) / sh * bottom}})
             mesh:SetVertex(j * 3 - 1,
                 {{bones[triangle[2]]:GetX(), bones[triangle[2]]:GetY(), bones[triangle[2]]:GetZ()}, {col, col, col, 1},
-                 {(firstAft:GetX() + tiny * newbonedata[triangle[2]][1]) / sw * right,
-                  (firstAft:GetY() + tiny * newbonedata[triangle[2]][2]) / sh * bottom}})
+                 {(firstAft:GetX() + tiny * sh/480 * newbonedata[triangle[2]][1]) / sw * right,
+                  (firstAft:GetY() + tiny * sh/480 * newbonedata[triangle[2]][2]) / sh * bottom}})
             mesh:SetVertex(j * 3,
                 {{bones[triangle[3]]:GetX(), bones[triangle[3]]:GetY(), bones[triangle[3]]:GetZ()}, {col, col, col, 1},
-                 {(firstAft:GetX() + tiny * newbonedata[triangle[3]][1]) / sw * right,
-                  (firstAft:GetY() + tiny * newbonedata[triangle[3]][2]) / sh * bottom}})
+                 {(firstAft:GetX() + tiny * sh/480 * newbonedata[triangle[3]][1]) / sw * right,
+                  (firstAft:GetY() + tiny * sh/480 * newbonedata[triangle[3]][2]) / sh * bottom}})
         end
     end
 end
@@ -326,18 +330,26 @@ function VertexField:subscribe()
         self.aft.proxy:SetTarget(self.player:GetChild('NoteField')):visible(self.settings.meshtexture)
     end)
     on('update', function()
+        local offset = 0
+        if sh == 480 then
+            offset = 10
+        end
         for i, data in ipairs(self.notedata) do
-            self:DrawArrow(self.fakeArrows[i], data, i, self.boneTransform, 10)
+            self:DrawArrow(self.fakeArrows[i], data, i, self.boneTransform, offset)
         end
         if self.settings.show.receptors then
+            local offset = 0
+            if sh == 480 then
+                offset = 16
+            end
             for i = 1, 4 do
-                self:DrawArrow(self.fakeReceptors[i], {beat, i}, i, self.receptorTransform, 16)
+                self:DrawArrow(self.fakeReceptors[i], {beat, i}, i, self.receptorTransform, offset)
             end
         end
     end)
 end
 
-function VertexField:toggleVisible(setting, visible)
+function VertexField:toggleVisible(actor, visible)
     if self.settings.show[actor] ~= nil then
         self.settings.show[actor] = visible
     else

@@ -47,7 +47,7 @@ function setBeatOffset(a)
     beatOffset = a;
 end
 
-function require(modules, as)
+function dependency(modules, as)
     for i, module in ipairs(modules) do
         if imported_modules[module] == nil then
             msg("Module " .. as .. ' requires the missing module ' .. module)

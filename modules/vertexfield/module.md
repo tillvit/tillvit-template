@@ -2,7 +2,6 @@
 This module is very powerful; it allows easy creation of luafields by using AFTs and gives the modder access to each arrow as an Actor. Each arrow also can have bones attached to it, and each bone may be moved to imitate a vertex shader. Showcase video here: [Youtube](https://www.youtube.com/watch?v=slrIPcsuc1w)  
 
 The vertexfield module does not support holds currently.  
-This module hasn't been tested with 720p themes and it has been tested on 480p themes.  
     
 ## Usage
 
@@ -44,7 +43,6 @@ This module hasn't been tested with 720p themes and it has been tested on 480p t
 
 VertexField doesn't work with the following mods:
 
- - Rotation, Skew, Zoom on the Player Actor
  - Orient
  - NoteSkew
  - Mini, TinyX/Y

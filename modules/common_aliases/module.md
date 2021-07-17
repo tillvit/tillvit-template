@@ -20,6 +20,7 @@ This module has no dependencies.
     topscreen = SCREENMAN:GetTopScreen()
     P1 = SCREENMAN:GetTopScreen():GetChild("PlayerP1")
     P2 = SCREENMAN:GetTopScreen():GetChild("PlayerP2")
+    ARROW_SIZE = size of an arrow (scaled with 720p themes)
 
 
 

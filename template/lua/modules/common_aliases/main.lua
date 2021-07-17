@@ -5,6 +5,7 @@ sh = SCREEN_HEIGHT
 scm = SCREENMAN
 poptions = {GAMESTATE:GetPlayerState(0):GetPlayerOptions('ModsLevel_Song'),
             GAMESTATE:GetPlayerState(1):GetPlayerOptions('ModsLevel_Song')}
+ARROW_SIZE = sh / 480 * 64
 
 on('preon', function()
     topscreen = SCREENMAN:GetTopScreen()

@@ -512,15 +512,15 @@ function mod(a)
         msg("Couldn't register mod! Too few arguments.")
         return
     end
-    if type(t[1]) ~= "number" then
+    if type(a[1]) ~= "number" then
         msg("Couldn't register mod! Beat argument is not a number!")
         return
     end
-    if type(t[2]) ~= "number" then
+    if type(a[2]) ~= "number" then
         msg("Couldn't register mod! Player argument is not a number!")
         return
     end
-    if type(t[3]) ~= "table" then
+    if type(a[3]) ~= "table" then
         msg("Couldn't register mod! Third argument is not a table!")
         return
     end
@@ -531,11 +531,11 @@ function action(a)
         msg("Couldn't register action! Too few arguments.")
         return
     end
-    if type(t[1]) ~= "number" then
+    if type(a[1]) ~= "number" then
         msg("Couldn't register action! Beat argument is not a number!")
         return
     end
-    if type(t[2]) ~= "function" then
+    if type(a[2]) ~= "function" then
         msg("Couldn't register actio! Second argument is not a function!")
         return
     end
