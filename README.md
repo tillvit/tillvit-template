@@ -1,2 +1,4 @@
 # tillvit-template
-template for outfox modding 
+Template for OutFox Modding
+
+it's like Node but Not Really
