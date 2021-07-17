@@ -42,3 +42,5 @@ To access the ActorFrame directly for methods, the variable is named "af".
 `setEditor(bool b)`: set whether the player is in edit mode for testing (will be removed when 2 player support comes out)
 
 `setBeatOffset(float f)`: sets the beat offset for modding. This will modify the current beat and all mods will be affected.
+
+`load(string s)`: loads the file with the path s

@@ -60,6 +60,10 @@ function module(module)
     imported_modules[module] = true
 end
 
+function load(file) 
+    assert(loadfile(GAMESTATE:GetCurrentSong():GetSongDir()..file))()
+end
+
 local function init_command(self) 
     emit 'preinit'
     emit 'init'

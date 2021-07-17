@@ -1,17 +1,17 @@
 # vertexfield
 This module is very powerful; it allows easy creation of luafields by using AFTs and gives the modder access to each arrow as an Actor. Each arrow also can have bones attached to it, and each bone may be moved to imitate a vertex shader. Showcase video here: [Youtube](https://www.youtube.com/watch?v=slrIPcsuc1w)  
 
-The vertexfield module does not support holds currently.  
+The vertexfield module does not support mines currently. 
     
 ## Usage
 
     module "vertexfield"
     
     local notedata = {
-	    {0.000, 1},
-	    {1.000, 2},
-	    {2.000, 3},
-	    {3.000, 4}
+	    {0.000, 0, 1},
+	    {1.000, 1, 1},
+	    {2.000, 2, 2, length=0.750},
+	    {3.000, 3, 1}
     }
     
     --Create the VertexField with the player number 1 and
@@ -106,4 +106,4 @@ Transform functions are called before the mesh is drawn. Here is an example of a
  - arrowx: the x position of the center of this arrow 
  - arrowy: the y position of the center of this arrow
  - arrowz: the z position of the center of this arrow
- - data: a table that includes the beat and column of this arrow: {beat, column}
+ - data: a table that includes the beat and column of this arrow: {beat, column}. Column numbers start from 0.

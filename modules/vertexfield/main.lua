@@ -1,4 +1,4 @@
-dependency ({"common_aliases"}, "vertexfield")
+dependency({"common_aliases"}, "vertexfield")
 
 local uniqueaftid = 0
 
@@ -157,6 +157,88 @@ function VertexField:generate()
                 self:x(0):y(0):visible(true)
             end
         })
+        -- holds 
+        if data[3] == 2 then
+            -- mesh
+            add(Def.ActorMultiVertex {
+                Texture = self.screenTex,
+                InitCommand = function(self)
+                    fakeArrows[i].holdmesh = self
+                end,
+                OnCommand = function(self)
+                    self:SetDrawState({
+                        Mode = "DrawMode_Quads",
+                        First = 1,
+                        Num = -1
+                    })
+                    self:SetNumVertices(((math.floor(data.length / 0.1) * 2 + 4) / 2 - 1) * 4)
+                    self:x(0):y(0):visible(true)
+                end
+            })
+            fakeArrows[i].holdbones = {}
+            for j = 1, math.floor(data.length / 0.1) do
+                add(Def.Quad {
+                    InitCommand = function(self)
+                        table.insert(fakeArrows[i].holdbones, self);
+                    end,
+                    OnCommand = function(self)
+                        self:diffuse(1, 1, 1, 0.5)
+                        self:zoomto(10, 10)
+                        self:visible(true)
+                    end
+                })
+                add(Def.Quad {
+                    InitCommand = function(self)
+                        table.insert(fakeArrows[i].holdbones, self);
+                    end,
+                    OnCommand = function(self)
+                        self:diffuse(1, 1, 1, 0.5)
+                        self:zoomto(10, 10)
+                        self:visible(true)
+                    end
+                })
+            end
+            add(Def.Quad {
+                InitCommand = function(self)
+                    table.insert(fakeArrows[i].holdbones, self);
+                end,
+                OnCommand = function(self)
+                    self:diffuse(1, 1, 1, 0.5)
+                    self:zoomto(10, 10)
+                    self:visible(true)
+                end
+            })
+            add(Def.Quad {
+                InitCommand = function(self)
+                    table.insert(fakeArrows[i].holdbones, self);
+                end,
+                OnCommand = function(self)
+                    self:diffuse(1, 1, 1, 0.5)
+                    self:zoomto(10, 10)
+                    self:visible(true)
+                end
+            })
+            add(Def.Quad {
+                InitCommand = function(self)
+                    table.insert(fakeArrows[i].holdbones, self);
+                end,
+                OnCommand = function(self)
+                    self:diffuse(1, 1, 1, 0.5)
+                    self:zoomto(10, 10)
+                    self:visible(true)
+                end
+            })
+            add(Def.Quad {
+                InitCommand = function(self)
+                    table.insert(fakeArrows[i].holdbones, self);
+                end,
+                OnCommand = function(self)
+                    self:diffuse(1, 1, 1, 0.5)
+                    self:zoomto(10, 10)
+                    self:visible(true)
+                end
+            })
+        end
     end
     self.fakeArrows = fakeArrows
     local fakeReceptors = {}
@@ -228,9 +310,11 @@ function VertexField:DrawArrow(obj, data, i, transform, yoffset)
     local bones = obj.bones
     local structure = obj.structure
     local mesh = obj.mesh
+    local holdbones = obj.holdbones
+    local holdmesh = obj.holdmesh
 
     local offBeat = data[1]
-    local column = data[2]
+    local column = data[2] + 1
     local tiny = math.pow(0.5, poptions[1]:Tiny())
 
     local yOffset = ArrowEffects.GetYOffset(GAMESTATE:GetPlayerState("PlayerNumber_P" .. self.playerNum), column,
@@ -242,7 +326,7 @@ function VertexField:DrawArrow(obj, data, i, transform, yoffset)
     local arrowz = ArrowEffects.GetZPos(GAMESTATE:GetPlayerState("PlayerNumber_P" .. self.playerNum), column, yOffset)
     -- i don't know what this 100 does but it said i needed a 4th number argument and it does not exist in the documentation
     local rotationz = ArrowEffects.GetRotationZ(GAMESTATE:GetPlayerState("PlayerNumber_P" .. self.playerNum), offBeat,
-        false, 100)
+        data[3] == 2 or data[3] == 3, 100)
 
     if (arrowy > sh + 50 or arrowy < -50) or (beat > offBeat and not self.settings.drawpastreceptors) then
         -- stop existing if off screen
@@ -252,6 +336,12 @@ function VertexField:DrawArrow(obj, data, i, transform, yoffset)
         for i = 1, #self.bonedata do
             bones[i]:visible(false)
         end
+        if data[3] == 2 or data[3] == 3 then
+            for i = 1, #holdbones do
+                holdbones[i]:visible(false)
+            end
+            holdmesh:visible(false)
+        end
         return
     else
         firstAft:visible(self.settings.show.aft)
@@ -260,6 +350,24 @@ function VertexField:DrawArrow(obj, data, i, transform, yoffset)
         for i = 1, #self.bonedata do
             bones[i]:visible(self.settings.show.bones)
         end
+        if data[3] == 2 or data[3] == 3 then
+            holdmesh:visible(self.settings.show.mesh)
+            for i = 1, #holdbones do
+                holdbones[i]:visible(self.settings.show.bones)
+            end
+        end
+    end
+
+    if (data[3] == 2 or data[3] == 3) then
+        yOffset = ArrowEffects.GetYOffset(GAMESTATE:GetPlayerState("PlayerNumber_P" .. self.playerNum), column,
+            math.max(offBeat, beat))
+        arrowx = ArrowEffects.GetXPos(GAMESTATE:GetPlayerState("PlayerNumber_P" .. self.playerNum), column, yOffset) *
+                     SCREEN_HEIGHT / 480 + SCREEN_WIDTH / 2
+        arrowy = ArrowEffects.GetYPos(GAMESTATE:GetPlayerState("PlayerNumber_P" .. self.playerNum), column, yOffset) *
+                     SCREEN_HEIGHT / 480 + SCREEN_HEIGHT / 2 + yoffset
+        arrowz = ArrowEffects.GetZPos(GAMESTATE:GetPlayerState("PlayerNumber_P" .. self.playerNum), column, yOffset)
+        rotationz = ArrowEffects.GetRotationZ(GAMESTATE:GetPlayerState("PlayerNumber_P" .. self.playerNum), offBeat,
+            data[3] == 2 or data[3] == 3, 100)
     end
 
     -- position the aft
@@ -281,13 +389,85 @@ function VertexField:DrawArrow(obj, data, i, transform, yoffset)
 
     for j = 1, #self.bonedata do
         -- position the bones   
-        bones[j]:x(firstAft:GetX() + newbonedata[j][1] * tiny * sh/480)
-        bones[j]:y(firstAft:GetY() + newbonedata[j][2] * tiny * sh/480)
+        bones[j]:x(firstAft:GetX() + newbonedata[j][1] * tiny * sh / 480)
+        bones[j]:y(firstAft:GetY() + newbonedata[j][2] * tiny * sh / 480)
         bones[j]:z(0)
+    end
+
+    local holdpositions = {}
+
+    if data[3] == 2 or data[3] == 3 then
+        for j = 1, #holdbones - 4 do
+            local holdbeat = math.max(offBeat + math.floor((j - 1) / 2) * 0.1, beat)
+            local yOffset = ArrowEffects.GetYOffset(GAMESTATE:GetPlayerState("PlayerNumber_P" .. self.playerNum),
+                column, holdbeat)
+            local arrowx = ArrowEffects.GetXPos(GAMESTATE:GetPlayerState("PlayerNumber_P" .. self.playerNum), column,
+                yOffset) * SCREEN_HEIGHT / 480 + SCREEN_WIDTH / 2
+            local arrowy = ArrowEffects.GetYPos(GAMESTATE:GetPlayerState("PlayerNumber_P" .. self.playerNum), column,
+                yOffset) * SCREEN_HEIGHT / 480 + SCREEN_HEIGHT / 2 + yoffset
+            local arrowz = ArrowEffects.GetZPos(GAMESTATE:GetPlayerState("PlayerNumber_P" .. self.playerNum), column,
+                yOffset)
+            -- position the bones   
+            holdbones[j]:x(arrowx)
+            holdbones[j]:y(arrowy)
+            holdbones[j]:z(0)
+            if (j % 2 == 1) then
+                holdbones[j]:addx(-ARROW_SIZE / 2 * tiny)
+            else
+                holdbones[j]:addx(ARROW_SIZE / 2 * tiny)
+            end
+            table.insert(holdpositions, {holdbones[j]:GetX(), holdbones[j]:GetY()})
+        end
+        for j = #holdbones - 3, #holdbones - 2 do
+            local holdbeat = math.max(offBeat + data.length, beat)
+            local yOffset = ArrowEffects.GetYOffset(GAMESTATE:GetPlayerState("PlayerNumber_P" .. self.playerNum),
+                column, holdbeat)
+            local arrowx = ArrowEffects.GetXPos(GAMESTATE:GetPlayerState("PlayerNumber_P" .. self.playerNum), column,
+                yOffset) * SCREEN_HEIGHT / 480 + SCREEN_WIDTH / 2
+            local arrowy = ArrowEffects.GetYPos(GAMESTATE:GetPlayerState("PlayerNumber_P" .. self.playerNum), column,
+                yOffset) * SCREEN_HEIGHT / 480 + SCREEN_HEIGHT / 2 + yoffset
+            local arrowz = ArrowEffects.GetZPos(GAMESTATE:GetPlayerState("PlayerNumber_P" .. self.playerNum), column,
+                yOffset)
+            -- position the bones   
+            holdbones[j]:x(arrowx)
+            holdbones[j]:y(arrowy)
+            holdbones[j]:z(0)
+            if (j % 2 == 1) then
+                holdbones[j]:addx(-ARROW_SIZE / 2 * tiny)
+            else
+                holdbones[j]:addx(ARROW_SIZE / 2 * tiny)
+            end
+            table.insert(holdpositions, {holdbones[j]:GetX(), holdbones[j]:GetY()})
+        end
+        for j = #holdbones - 1, #holdbones do
+            local holdbeat = math.max(offBeat + data.length, beat)
+            local yOffset = ArrowEffects.GetYOffset(GAMESTATE:GetPlayerState("PlayerNumber_P" .. self.playerNum),
+                column, holdbeat)
+            local arrowx = ArrowEffects.GetXPos(GAMESTATE:GetPlayerState("PlayerNumber_P" .. self.playerNum), column,
+                yOffset) * SCREEN_HEIGHT / 480 + SCREEN_WIDTH / 2
+            local arrowy = ArrowEffects.GetYPos(GAMESTATE:GetPlayerState("PlayerNumber_P" .. self.playerNum), column,
+                yOffset) * SCREEN_HEIGHT / 480 + SCREEN_HEIGHT / 2 + yoffset
+            local arrowz = ArrowEffects.GetZPos(GAMESTATE:GetPlayerState("PlayerNumber_P" .. self.playerNum), column,
+                yOffset)
+            -- position the bones   
+            holdbones[j]:x(arrowx)
+            holdbones[j]:y(arrowy + 30 * tiny)
+            holdbones[j]:z(0)
+            if (j % 2 == 1) then
+                holdbones[j]:addx(-ARROW_SIZE / 2 * tiny)
+            else
+                holdbones[j]:addx(ARROW_SIZE / 2 * tiny)
+            end
+            table.insert(holdpositions, {holdbones[j]:GetX(), holdbones[j]:GetY()})
+        end
     end
 
     -- transform the arrows based on the given function
     transform(i, bones, arrowx, arrowy, arrowz, data)
+
+    if (data[3] == 2 or data[3] == 3) then
+        transform(i, holdbones, arrowx, arrowy, arrowz, data)
+    end
 
     -- draw structure
     if structure:GetVisible() then
@@ -303,23 +483,41 @@ function VertexField:DrawArrow(obj, data, i, transform, yoffset)
     if mesh:GetVisible() then
         for j, triangle in ipairs(self.triangles) do
             -- showcasing (colors with no texture)
-            col = 1
+            local col = 1
             if (not self.settings.meshtexture) then
                 col = j / #self.triangles
             end
             -- a lot of characters but it just Does Thing (maps coords on tex to screen based on the position of the bones)
             mesh:SetVertex(j * 3 - 2,
                 {{bones[triangle[1]]:GetX(), bones[triangle[1]]:GetY(), bones[triangle[1]]:GetZ()}, {col, col, col, 1},
-                 {(firstAft:GetX() + tiny * sh/480 * newbonedata[triangle[1]][1]) / sw * right,
-                  (firstAft:GetY() + tiny * sh/480 * newbonedata[triangle[1]][2]) / sh * bottom}})
+                 {(firstAft:GetX() + tiny * sh / 480 * newbonedata[triangle[1]][1]) / sw * right,
+                  (firstAft:GetY() + tiny * sh / 480 * newbonedata[triangle[1]][2]) / sh * bottom}})
             mesh:SetVertex(j * 3 - 1,
                 {{bones[triangle[2]]:GetX(), bones[triangle[2]]:GetY(), bones[triangle[2]]:GetZ()}, {col, col, col, 1},
-                 {(firstAft:GetX() + tiny * sh/480 * newbonedata[triangle[2]][1]) / sw * right,
-                  (firstAft:GetY() + tiny * sh/480 * newbonedata[triangle[2]][2]) / sh * bottom}})
+                 {(firstAft:GetX() + tiny * sh / 480 * newbonedata[triangle[2]][1]) / sw * right,
+                  (firstAft:GetY() + tiny * sh / 480 * newbonedata[triangle[2]][2]) / sh * bottom}})
             mesh:SetVertex(j * 3,
                 {{bones[triangle[3]]:GetX(), bones[triangle[3]]:GetY(), bones[triangle[3]]:GetZ()}, {col, col, col, 1},
-                 {(firstAft:GetX() + tiny * sh/480 * newbonedata[triangle[3]][1]) / sw * right,
-                  (firstAft:GetY() + tiny * sh/480 * newbonedata[triangle[3]][2]) / sh * bottom}})
+                 {(firstAft:GetX() + tiny * sh / 480 * newbonedata[triangle[3]][1]) / sw * right,
+                  (firstAft:GetY() + tiny * sh / 480 * newbonedata[triangle[3]][2]) / sh * bottom}})
+        end
+        if data[3] == 2 or data[3] == 3 then
+            for j = 1, #holdbones - 2, 2 do
+                local col = 1
+                local rectindex = (j - 1) / 2
+                holdmesh:SetVertex(rectindex * 4 + 1,
+                    {{holdbones[j]:GetX(), holdbones[j]:GetY(), holdbones[j]:GetZ()}, {col, col, col, 1},
+                     {(holdpositions[j][1]) / sw * right, (holdpositions[j][2]) / sh * bottom}})
+                holdmesh:SetVertex(rectindex * 4 + 2,
+                    {{holdbones[j + 1]:GetX(), holdbones[j + 1]:GetY(), holdbones[j + 1]:GetZ()}, {col, col, col, 1},
+                     {(holdpositions[j + 1][1]) / sw * right, (holdpositions[j + 1][2]) / sh * bottom}})
+                holdmesh:SetVertex(rectindex * 4 + 4,
+                    {{holdbones[j + 2]:GetX(), holdbones[j + 2]:GetY(), holdbones[j + 2]:GetZ()}, {col, col, col, 1},
+                     {(holdpositions[j + 2][1]) / sw * right, (holdpositions[j + 2][2]) / sh * bottom}})
+                holdmesh:SetVertex(rectindex * 4 + 3,
+                    {{holdbones[j + 3]:GetX(), holdbones[j + 3]:GetY(), holdbones[j + 3]:GetZ()}, {col, col, col, 1},
+                     {(holdpositions[j + 3][1]) / sw * right, (holdpositions[j + 3][2]) / sh * bottom}})
+            end
         end
     end
 end
@@ -343,7 +541,7 @@ function VertexField:subscribe()
                 offset = 16
             end
             for i = 1, 4 do
-                self:DrawArrow(self.fakeReceptors[i], {beat, i}, i, self.receptorTransform, offset)
+                self:DrawArrow(self.fakeReceptors[i], {beat, i - 1, 0}, i - 1, self.receptorTransform, offset)
             end
         end
     end)
@@ -363,7 +561,7 @@ function VertexField:drawTexturedMesh(bool)
 end
 
 function VertexField:HidePastReceptors(bool)
-    self.drawpastreceptors = not bool
+    self.settings.drawpastreceptors = not bool
 end
 
 function VertexField:SetBoneTransform(func)
