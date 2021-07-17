@@ -25,7 +25,7 @@ mod ({0,0,{
   {0,1,'zoom','outQuad'},
 }})
 
-action ({0.1,function()
+action ({0,function()
   P1:visible(true)
   P2:visible(true)
 end})
