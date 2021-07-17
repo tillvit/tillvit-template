@@ -15,10 +15,3 @@ rotates the point {a,b} around the point {0,0}
     rotatePoints(table points)
 rotates the points in the table around the point {0,0}
 
-    tablestring(table t)
-converts the table into a string
-
-    tablenumkeys(table t)
-returns the number of keys of the table
-
-

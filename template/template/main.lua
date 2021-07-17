@@ -17,7 +17,7 @@ end
 setup()
 
 function msg(msg)
-    SCREENMAN:SystemMessage(msg)
+    SCREENMAN:SystemMessage(tostring(msg))
 end
 
 function emit(event) 

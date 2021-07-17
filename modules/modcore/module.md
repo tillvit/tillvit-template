@@ -38,6 +38,11 @@ This module also has a function to hide all overlay elements and another functio
     action ({0, function()
 	    P1:visible(false)
     end})
+
+    --Print the beat between beat 0 and beat 8
+    perframe ({0, 8, function()
+	    msg(beat)
+    end})
     
     
 ## Dependencies
