@@ -11,6 +11,8 @@ local curaction = 1
 local actions = {}
 local perframes = {}
 
+local modcache = {{},{}}
+
 local eases = {
     linear=Tweens.easeLinear,
     inquad=Tweens.easeInQuad,
@@ -248,32 +250,42 @@ local function applyplayeractormod(value, mod, actor)
     if actor ~= nil then
         if mod == "rotationx" then
             actor:rotationx(value)
+            return true
         end
         if mod == "rotationy" then
             actor:rotationy(value)
+            return true
         end
         if mod == "rotationz" then
             actor:rotationz(value)
+            return true
         end
         if mod == "x" then
             actor:x(value)
+            return true
         end
         if mod == "y" then
             actor:y(value)
+            return true
         end
         if mod == "zoom" then
-            actor:zoomz(value)
+            actor:zoom(value)
+            return true
         end
         if mod == "zoomx" then
             actor:zoomx(value)
+            return true
         end
         if mod == "zoomy" then
             actor:zoomy(value)
+            return true
         end
         if mod == "zoomz" then
             actor:zoomz(value)
+            return true
         end
     end
+    return false
 end
 
 local function getModString(mod, percentage, player) 
@@ -286,12 +298,11 @@ local function getModString(mod, percentage, player)
             return '*10000 ' .. string.sub(mod, 1, 1) .. perc
         end
     else
-        applyplayeractormod(perc, mod, tillvit["P"..player])
-        if (mod ~= "x") then
-            return '*10000 ' .. perc .. ' ' .. mod
+        if (applyplayeractormod(perc, mod, tillvit["P"..player])) then
+            return nil
         end
+        return '*10000 ' .. perc .. ' ' .. mod
     end
-    return nil
 end
 
 local function execute_mods()
@@ -304,8 +315,11 @@ local function execute_mods()
             local d = mod.easelength
             if beat > mod.endeasebeat then
                 -- activate mod if time passed
-                local string = getModString(mod.mod, mod.percentage, plr)
-                if string then table.insert(mods_this_frame, string) end
+                local modstring = getModString(mod.mod, mod.percentage, plr)
+                if modstring then 
+                    modcache[plr][string.lower(mod.mod)] = mod.percentage
+                    table.insert(mods_this_frame, modstring) 
+                end
                 currently_active_mods[plr][mod.mod] = nil
             else
                 local ease = eases[string.lower(mod.ease)]
@@ -313,8 +327,12 @@ local function execute_mods()
                     ease = eases.linear
                     msg("Couldn't find ease " .. mod.ease)
                 end
-                local string = getModString(mod.mod, ease(t, b, c, d), plr)
-                if string then table.insert(mods_this_frame, string) end
+                local val = ease(t, b, c, d)
+                local modstring = getModString(mod.mod, val, plr)
+                if modstring then 
+                    modcache[plr][string.lower(mod.mod)] = val
+                    table.insert(mods_this_frame, modstring) 
+                end
             end
         end
         -- concat mods on this frame and activate them
@@ -332,6 +350,10 @@ local function execute_mods()
 end
 
 local function getCurrentModValue(mod, plr) 
+    if modcache[plr][string.lower(mod)] then
+        return modcache[plr][string.lower(mod)]
+    end
+    
     --find normal mod
     for i, c in ipairs(GAMESTATE:GetPlayerState(plr-1):GetPlayerOptionsArray("ModsLevel_Song")) do
         if (not (string.find(string.lower(c), string.lower(mod)) == nil)) then
