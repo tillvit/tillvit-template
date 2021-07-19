@@ -1,7 +1,7 @@
-local p1judg = nil
-local p1combo = nil
-local p2judg = nil
-local p2combo = nil
+p1judg = nil
+p1combo = nil
+p2judg = nil
+p2combo = nil
 
 on('on', function()
     if P1 then

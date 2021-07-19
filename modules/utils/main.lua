@@ -5,7 +5,7 @@ end
 
 -- rotates the table of points around (0,0) with angle theta
 function rotatePoints(points, theta)
-    newPoints = {}
+    local newPoints = {}
     for i, point in ipairs(points) do
         table.insert(newPoints, rotatePoint(point, theta))
     end
@@ -18,4 +18,20 @@ function rotatePoint(point, theta)
     p[1] = math.cos(theta) * point[1] - math.sin(theta) * point[2]
     p[2] = math.sin(theta) * point[1] + math.cos(theta) * point[2]
     return p
+end
+
+function addtotable(t, n) 
+    local nextTable = {}
+    for i, value in ipairs(t) do
+        table.insert(nextTable, value + n)
+    end
+    return nextTable
+end
+
+function range(s, e, step)
+    local t = {}
+    for i= s, e, step do
+        table.insert(t,i)
+    end
+    return t
 end

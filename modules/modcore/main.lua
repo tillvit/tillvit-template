@@ -1,323 +1,222 @@
-local currently_active_mods_1 = {};
-local currently_active_mods_2 = {};
+dependency ({"common_aliases"},"modcore")
+
+if Tweens == nil then
+    msg("The Tweens namespace doesn't exist! (requires build 4.9.7+)")
+end
+
+local currently_active_mods = {{},{}}
 local curmod = 1;
 local mods = {}
 local curaction = 1
 local actions = {}
 local perframes = {}
--- ----------- EASING FUNCTIONS -----------
 
--- -- Adapted from
--- -- Tweener's easing functions (Penner's Easing Equations)
--- -- and  w (jstweener javascript version)
--- --
-
--- --[[
--- Disclaimer for Robert Penner's Easing Equations license:
-
--- TERMS OF USE - EASING EQUATIONS
-
--- Open source under the BSD License.
-
--- Copyright © 501 Robert Penner
--- All rights reserved.
-
--- Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-
--- * Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
--- * Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
--- * Neither the name of the author nor the names of contributors may be used to endorse or promote products derived from this software without specific prior written permission.
-
--- THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 'AS IS' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
--- ]]
-
--- -- For all easing functions:
--- -- t = elapsed time
--- -- b = begin
--- -- c = change == ending - beginning
--- -- d = duration (total time)
-
-local function calculateEase(t, b, c, d, ease)
-    local mod_value = 0
-    if ease == "linear" then
-        mod_value = c * t / d + b
-    elseif ease == "inQuad" then
-        t = t / d
-        mod_value = c * math.pow(t, 2) + b
-    elseif ease == "outQuad" then
-        t = t / d
-        mod_value = -c * t * (t - 2) + b
-    elseif ease == "inOutQuad" then
-        t = t / d * 2
-        if t < 1 then
-            mod_value = c / 2 * math.pow(t, 2) + b
-        else
-            mod_value = -c / 2 * ((t - 1) * (t - 3) - 1) + b
-        end
-    elseif ease == "outInQuad" then
+local eases = {
+    linear=Tweens.easeLinear,
+    inquad=Tweens.easeInQuad,
+    outquad=Tweens.easeOutQuad,
+    inoutquad=Tweens.easeInOutQuad,
+    outinquad=function(t,b,c,d)
         if t < d / 2 then
             t = t * 2
             c = c / 2
             t = t / d
-            mod_value = -c * t * (t - 2) + b
+            return -c * t * (t - 2) + b
         else
             t = (t * 2) - d
             b = b + c / 2
             c = c / 2
             t = t / d
-            mod_value = c * math.pow(t, 2) + b
+            return c * math.pow(t, 2) + b
         end
-    elseif ease == "inCubic" then
-        t = t / d
-        mod_value = c * math.pow(t, 3) + b
-    elseif ease == "outCubic" then
-        t = t / d - 1
-        mod_value = c * (math.pow(t, 3) + 1) + b
-    elseif ease == "inOutCubic" then
-        t = t / d * 2
-        if t < 1 then
-            mod_value = c / 2 * t * t * t + b
-        else
-            t = t - 2
-            mod_value = c / 2 * (t * t * t + 2) + b
-        end
-    elseif ease == "outInCubic" then
+    end,
+    incubic=Tweens.easeInCubic,
+    outcubic=Tweens.easeOutCubic,
+    inoutcubic=Tweens.easeInOutCubic,
+    outincubic=function(t,b,c,d)
         if t < d / 2 then
             t = t * 2
             c = c / 2
             t = t / d - 1
-            mod_value = c * (math.pow(t, 3) + 1) + b
+            return c * (math.pow(t, 3) + 1) + b
         else
             t = (t * 2) - d
             b = b + c / 2
             c = c / 2
             t = t / d
-            mod_value = c * math.pow(t, 3) + b
+            return c * math.pow(t, 3) + b
         end
-    elseif ease == "inQuart" then
-        t = t / d
-        mod_value = c * math.pow(t, 4) + b
-    elseif ease == "outQuart" then
-        t = t / d - 1
-        mod_value = -c * (math.pow(t, 4) - 1) + b
-    elseif ease == "inOutQuart" then
-        t = t / d * 2
-        if t < 1 then
-            mod_value = c / 2 * math.pow(t, 4) + b
-        else
-            t = t - 2
-            mod_value = -c / 2 * (math.pow(t, 4) - 2) + b
-        end
-    elseif ease == "outInQuart" then
+    end,
+    inquart=Tweens.easeInQuart,
+    outquart=Tweens.easeOutQuart,
+    inoutquart=Tweens.easeInOutQuart,
+    outinquart=function(t,b,c,d)
         if t < d / 2 then
             t = t * 2
             c = c / 2
             t = t / d - 1
-            mod_value = -c * (math.pow(t, 4) - 1) + b
+            return -c * (math.pow(t, 4) - 1) + b
         else
             t = (t * 2) - d
             b = b + c / 2
             c = c / 2
             t = t / d
-            mod_value = c * math.pow(t, 4) + b
+            return c * math.pow(t, 4) + b
         end
-    elseif ease == "inQuint" then
-        t = t / d
-        mod_value = c * math.pow(t, 5) + b
-    elseif ease == "outQuint" then
-        t = t / d - 1
-        mod_value = c * (math.pow(t, 5) + 1) + b
-    elseif ease == "inOutQuint" then
-        t = t / d * 2
-        if t < 1 then
-            mod_value = c / 2 * math.pow(t, 5) + b
-        else
-            t = t - 2
-            mod_value = c / 2 * (math.pow(t, 5) + 2) + b
-        end
-    elseif ease == "outInQuint" then
+    end,
+    inquint=Tweens.easeInQuint,
+    outquint=Tweens.easeOutQuint,
+    inoutquint=Tweens.easeInOutQuint,
+    outinquint=function(t,b,c,d)
         if t < d / 2 then
             t = t * 2
             c = c / 2
             t = t / d - 1
-            mod_value = c * (math.pow(t, 5) + 1) + b
+            return c * (math.pow(t, 5) + 1) + b
         else
             t = (t * 2) - d
             b = b + c / 2
             c = c / 2
             t = t / d
-            mod_value = c * math.pow(t, 5) + b
+            return c * math.pow(t, 5) + b
         end
-    elseif ease == "inSine" then
-        mod_value = -c * math.cos(t / d * (math.pi / 2)) + c + b
-    elseif ease == "outSine" then
-        mod_value = c * math.sin(t / d * (math.pi / 2)) + b
-    elseif ease == "inOutSine" then
-        mod_value = -c / 2 * (math.cos(math.pi * t / d) - 1) + b
-    elseif ease == "flipSine" then
-        c = 100
-        mod_value = (-1 * math.abs(-c * math.cos(t * math.pi / d)) + c)
-    elseif ease == "outInSine" then
+    end,
+    insine=Tweens.easeInSine,
+    outsine=Tweens.easeOutSine,
+    inoutsine=Tweens.easeInOutSine,
+    outinsine=function(t,b,c,d)
         if t < d / 2 then
             t = t * 2
             c = c / 2
-            mod_value = c * math.sin(t / d * (math.pi / 2)) + b
+            return c * math.sin(t / d * (math.pi / 2)) + b
         else
             t = (t * 2) - d
             b = b + c / 2
             c = c / 2
-            mod_value = -c * math.cos(t / d * (math.pi / 2)) + c + b
+            return -c * math.cos(t / d * (math.pi / 2)) + c + b
         end
-    elseif ease == "inExpo" then
-        if t == 0 then
-            mod_value = b
-        else
-            mod_value = c * math.pow(2, 10 * (t / d - 1)) + b - c * 0.001
-        end
-    elseif ease == "outExpo" then
-        if t == d then
-            mod_value = b + c
-        else
-            mod_value = c * 1.001 * (-math.pow(2, -10 * t / d) + 1) + b
-        end
-    elseif ease == "inOutExpo" then
-        if t == 0 then
-            mod_value = b
-        end
-        if t == d then
-            mod_value = b + c
-        end
-        t = t / d * 2
-        if t < 1 then
-            mod_value = c / 2 * math.pow(2, 10 * (t - 1)) + b - c * 0.0005
-        else
-            t = t - 1
-            mod_value = c / 2 * 1.0005 * (-math.pow(2, -10 * t) + 2) + b
-        end
-    elseif ease == "outInExpo" then
+    end,
+    inexpo=Tweens.easeInExpo,
+    outexpo=Tweens.easeOutExpo,
+    inoutexpo=Tweens.easeInOutExpo,
+    outinexpo=function(t,b,c,d)
         if t < d / 2 then
             t = t * 2
             c = c / 2
             if t == d then
-                mod_value = b + c
+                return b + c
             else
-                mod_value = c * 1.001 * (-math.pow(2, -10 * t / d) + 1) + b
+                return c * 1.001 * (-math.pow(2, -10 * t / d) + 1) + b
             end
         else
             t = (t * 2) - d
             b = b + c / 2
             c = c / 2
             if t == 0 then
-                mod_value = b
+                return b
             else
-                mod_value = c * math.pow(2, 10 * (t / d - 1)) + b - c * 0.001
+                return c * math.pow(2, 10 * (t / d - 1)) + b - c * 0.001
             end
         end
-    elseif ease == "inCirc" then
-        t = t / d
-        mod_value = (-c * (math.sqrt(1 - math.pow(t, 2)) - 1) + b)
-    elseif ease == "outCirc" then
-        t = t / d - 1
-        mod_value = (c * math.sqrt(1 - math.pow(t, 2)) + b)
-    elseif ease == "inOutCirc" then
-        t = t / d * 2
-        if t < 1 then
-            mod_value = -c / 2 * (math.sqrt(1 - t * t) - 1) + b
-        else
-            t = t - 2
-            mod_value = c / 2 * (math.sqrt(1 - t * t) + 1) + b
-        end
-    elseif ease == "outInCirc" then
+    end,
+    incirc=Tweens.easeInCirc,
+    outcirc=Tweens.easeOutCirc,
+    inoutcirc=Tweens.easeInOutCirc,
+    outincirc=function(t,b,c,d)
         if t < d / 2 then
             t = t * 2
             c = c / 2
             t = t / d - 1
-            mod_value = (c * math.sqrt(1 - math.pow(t, 2)) + b)
+            return (c * math.sqrt(1 - math.pow(t, 2)) + b)
         else
             t = (t * 2) - d
             b = b + c / 2
             c = c / 2
             t = t / d
-            mod_value = (-c * (math.sqrt(1 - math.pow(t, 2)) - 1) + b)
+            return (-c * (math.sqrt(1 - math.pow(t, 2)) - 1) + b)
         end
-    elseif ease == "outBounce" then
-        t = t / d
-        if t < 1 / 2.75 then
-            mod_value = c * (7.5625 * t * t) + b
-        elseif t < 2 / 2.75 then
-            t = t - (1.5 / 2.75)
-            mod_value = c * (7.5625 * t * t + 0.75) + b
-        elseif t < 2.5 / 2.75 then
-            t = t - (2.25 / 2.75)
-            mod_value = c * (7.5625 * t * t + 0.9375) + b
-        else
-            t = t - (2.625 / 2.75)
-            mod_value = c * (7.5625 * t * t + 0.984375) + b
-        end
-    elseif ease == "inBounce" then
+    end,
+    inbounce=function(t, b, c, d)
         t = d - t
         t = t / d
         if t < 1 / 2.75 then
-            mod_value = c - (c * (7.5625 * t * t)) + b
+            return c - (c * (7.5625 * t * t)) + b
         elseif t < 2 / 2.75 then
             t = t - (1.5 / 2.75)
-            mod_value = c - (c * (7.5625 * t * t + 0.75)) + b
+            return c - (c * (7.5625 * t * t + 0.75)) + b
         elseif t < 2.5 / 2.75 then
             t = t - (2.25 / 2.75)
-            mod_value = c - (c * (7.5625 * t * t + 0.9375)) + b
+            return c - (c * (7.5625 * t * t + 0.9375)) + b
         else
             t = t - (2.625 / 2.75)
-            mod_value = c - (c * (7.5625 * t * t + 0.984375)) + b
+            return  c - (c * (7.5625 * t * t + 0.984375)) + b
         end
-    elseif ease == "inOutBounce" then
+    end,
+    outbounce=function(t, b, c, d)
+        t = t / d
+        if t < 1 / 2.75 then
+            return c * (7.5625 * t * t) + b
+        elseif t < 2 / 2.75 then
+            t = t - (1.5 / 2.75)
+            return c * (7.5625 * t * t + 0.75) + b
+        elseif t < 2.5 / 2.75 then
+            t = t - (2.25 / 2.75)
+            return c * (7.5625 * t * t + 0.9375) + b
+        else
+            t = t - (2.625 / 2.75)
+            return c * (7.5625 * t * t + 0.984375) + b
+        end
+    end,
+    inoutbounce=function(t, b, c, d)
         if t < d / 2 then
             t = t * 2
             t = d - t
             t = t / d
             if t < 1 / 2.75 then
-                mod_value = 0.5 * (c - (c * (7.5625 * t * t))) + b
+                return 0.5 * (c - (c * (7.5625 * t * t))) + b
             elseif t < 2 / 2.75 then
                 t = t - (1.5 / 2.75)
-                mod_value = 0.5 * (c - (c * (7.5625 * t * t + 0.75))) + b
+                return  0.5 * (c - (c * (7.5625 * t * t + 0.75))) + b
             elseif t < 2.5 / 2.75 then
                 t = t - (2.25 / 2.75)
-                mod_value = 0.5 * (c - (c * (7.5625 * t * t + 0.9375))) + b
+                return  0.5 * (c - (c * (7.5625 * t * t + 0.9375))) + b
             else
                 t = t - (2.625 / 2.75)
-                mod_value = 0.5 * (c - (c * (7.5625 * t * t + 0.984375))) + b
+                return  0.5 * (c - (c * (7.5625 * t * t + 0.984375))) + b
             end
         else
             t = t * 2 - d
             t = t / d
             if t < 1 / 2.75 then
-                mod_value = (c * (7.5625 * t * t)) * 0.5 + c * .5 + b
+                return (c * (7.5625 * t * t)) * 0.5 + c * .5 + b
             elseif t < 2 / 2.75 then
                 t = t - (1.5 / 2.75)
-                mod_value = (c * (7.5625 * t * t + 0.75)) * 0.5 + c * .5 + b
+                return (c * (7.5625 * t * t + 0.75)) * 0.5 + c * .5 + b
             elseif t < 2.5 / 2.75 then
                 t = t - (2.25 / 2.75)
-                mod_value = (c * (7.5625 * t * t + 0.9375)) * 0.5 + c * .5 + b
+                return (c * (7.5625 * t * t + 0.9375)) * 0.5 + c * .5 + b
             else
                 t = t - (2.625 / 2.75)
-                mod_value = (c * (7.5625 * t * t + 0.984375)) * 0.5 + c * .5 + b
+                return (c * (7.5625 * t * t + 0.984375)) * 0.5 + c * .5 + b
             end
         end
-    elseif ease == "outInBounce" then
+    end,
+    outinbounce=function(t, b, c, d)
         if t < d / 2 then
             t = t * 2
             c = c / 2
             t = t / d
             if t < 1 / 2.75 then
-                mod_value = c * (7.5625 * t * t) + b
+                return c * (7.5625 * t * t) + b
             elseif t < 2 / 2.75 then
                 t = t - (1.5 / 2.75)
-                mod_value = c * (7.5625 * t * t + 0.75) + b
+                return c * (7.5625 * t * t + 0.75) + b
             elseif t < 2.5 / 2.75 then
                 t = t - (2.25 / 2.75)
-                mod_value = c * (7.5625 * t * t + 0.9375) + b
+                return c * (7.5625 * t * t + 0.9375) + b
             else
                 t = t - (2.625 / 2.75)
-                mod_value = c * (7.5625 * t * t + 0.984375) + b
+                return c * (7.5625 * t * t + 0.984375) + b
             end
         else
             t = (t * 2) - d
@@ -326,28 +225,23 @@ local function calculateEase(t, b, c, d, ease)
             t = d - t
             t = t / d
             if t < 1 / 2.75 then
-                mod_value = c - (c * (7.5625 * t * t)) + b
+                return c - (c * (7.5625 * t * t)) + b
             elseif t < 2 / 2.75 then
                 t = t - (1.5 / 2.75)
-                mod_value = c - (c * (7.5625 * t * t + 0.75)) + b
+                return c - (c * (7.5625 * t * t + 0.75)) + b
             elseif t < 2.5 / 2.75 then
                 t = t - (2.25 / 2.75)
-                mod_value = c - (c * (7.5625 * t * t + 0.9375)) + b
+                return c - (c * (7.5625 * t * t + 0.9375)) + b
             else
                 t = t - (2.625 / 2.75)
-                mod_value = c - (c * (7.5625 * t * t + 0.984375)) + b
+                return c - (c * (7.5625 * t * t + 0.984375)) + b
             end
         end
-    else
-        mod_value = c * t / d + b
-    end
-    return mod_value
-end
+    end,
+}
 
-local function mod_internal(str, pn)
-    local ps = GAMESTATE:GetPlayerState(pn)
-    local pmods = ps:GetPlayerOptionsString('ModsLevel_Song')
-    ps:SetPlayerOptions('ModsLevel_Song', pmods .. ', ' .. str)
+local function applymod(str, pn)
+    poptions[pn]:FromString(str)
 end
 
 local function applyplayeractormod(value, mod, actor)
@@ -381,130 +275,112 @@ local function applyplayeractormod(value, mod, actor)
         end
     end
 end
+
+local function getModString(mod, percentage, player) 
+    local perc = math.round(percentage*1000)/1000
+    if mod == "XMod" or mod == "CMod" or mod == "MMod" then
+        -- ew xmod cmod mmod different format ew
+        if mod == "XMod" then
+            return '*10000 ' .. perc / 100 .. "x"
+        else
+            return '*10000 ' .. string.sub(mod, 1, 1) .. perc
+        end
+    else
+        applyplayeractormod(perc, mod, tillvit["P"..player])
+        if (mod ~= "x") then
+            return '*10000 ' .. perc .. ' ' .. mod
+        end
+    end
+    return nil
+end
+
 local function execute_mods()
-    local mods_this_frame = {}
-    local p1toremove = {}
-    for i, mod in ipairs(currently_active_mods_1) do
-        local cbeat = beat
-        -- calculate easing variables
-        local t = beat - (mod[5] - mod[1])
-        local b = mod[6]
-        local c = mod[2] - mod[6]
-        local d = mod[1]
-        if (mod[5] - mod[1]) > beat then
-
-        else
-            if beat > mod[5] or t < 0 then
+    for plr=1,2 do
+        local mods_this_frame = {}
+        for key, mod in pairs(currently_active_mods[plr]) do
+            local t = beat - mod.startbeat
+            local b = mod["currentvaluep"..plr]
+            local c = mod.percentage - mod["currentvaluep"..plr]
+            local d = mod.easelength
+            if beat > mod.endeasebeat then
                 -- activate mod if time passed
-                if mod[3] == "XMod" or mod[3] == "CMod" or mod[3] == "MMod" then
-                    -- ew xmod cmod mmod different format ew
-                    if mod[3] == "XMod" then
-                        table.insert(mods_this_frame, '*999999 ' .. mod[2] / 100 .. string.sub(mod[3], 1, 1))
-                    else
-                        table.insert(mods_this_frame, '*999999 ' .. string.sub(mod[3], 1, 1) .. mod[2])
-                    end
-                else
-                    applyplayeractormod(mod[2], mod[3], P1)
-                    if (mod[3] ~= "x") then
-                        table.insert(mods_this_frame, '*999999 ' .. mod[2] .. ' ' .. mod[3])
-                    end
-                end
-                table.insert(p1toremove, i)
+                local string = getModString(mod.mod, mod.percentage, plr)
+                if string then table.insert(mods_this_frame, string) end
+                currently_active_mods[plr][mod.mod] = nil
             else
-                -- activate mod with eases since the mod is still running
-                local mod_value = calculateEase(t, b, c, d, mod[4])
-                if mod[3] == "XMod" or mod[3] == "CMod" or mod[3] == "MMod" then
-                    if mod[3] == "XMod" then
-                        table.insert(mods_this_frame, '*999999 ' .. mod_value / 100 .. string.sub(mod[3], 1, 1))
-                    else
-                        table.insert(mods_this_frame, '*999999 ' .. string.sub(mod[3], 1, 1) .. mod_value)
-                    end
+                local ease = eases[string.lower(mod.ease)]
+                if not ease then
+                    ease = eases.linear
+                    msg("Couldn't find ease " .. mod.ease)
+                end
+                local string = getModString(mod.mod, ease(t, b, c, d), plr)
+                if string then table.insert(mods_this_frame, string) end
+            end
+        end
+        -- concat mods on this frame and activate them
+        if #mods_this_frame > 0 then
+            local total_mod_str = ""
+            for i, ms in ipairs(mods_this_frame) do
+                if #total_mod_str > 0 then
+                    total_mod_str = total_mod_str .. ", "
+                end
+                total_mod_str = total_mod_str .. ms
+            end
+            applymod(total_mod_str, plr)
+        end
+    end
+end
+
+local function getCurrentModValue(mod, plr) 
+    --find normal mod
+    for i, c in ipairs(GAMESTATE:GetPlayerState(plr-1):GetPlayerOptionsArray("ModsLevel_Song")) do
+        if (not (string.find(string.lower(c), string.lower(mod)) == nil)) then
+            if (string.match(string.lower(c), string.lower(mod) .. ".") == nil) then
+                if not (string.match(string.lower(c), "(%-?%d+)%%") == nil) then
+                    return string.match(string.lower(c), "(%-?%d+)%%")
                 else
-                    applyplayeractormod(mod_value, mod[3], P1)
-                    if mod[3] ~= "x" then
-                        table.insert(mods_this_frame, '*999999 ' .. mod_value .. ' ' .. mod[3])
-                    end
+                    return 100
                 end
             end
         end
     end
-    -- get rid of currently active mods
-    if #p1toremove > 0 then
-        table.sort(p1toremove, function(a, b)
-            return a > b
-        end)
-        for i, remove in ipairs(p1toremove) do
-            table.remove(currently_active_mods_1, remove)
-        end
-    end
-    -- concat mods on this frame and activate them
-    if #mods_this_frame > 0 then
-        local total_mod_str = ""
-        for i, ms in ipairs(mods_this_frame) do
-            if #total_mod_str > 0 then
-                total_mod_str = total_mod_str .. ", "
+    
+    --find player actor mod
+    local playeractor = tillvit["P"..plr]
+    local ActorTransforms = {'RotationX', 'RotationY', 'RotationZ', 'X', 'Y', 'Zoom', 'ZoomX', 'ZoomY', 'ZoomZ'}
+    for i, value in ipairs(ActorTransforms) do
+        if string.lower(mod) == string.lower(value) then
+            if (playeractor ~= nil) then
+                return playeractor['Get' .. value](playeractor)
+            else
+                return 0
             end
-            total_mod_str = total_mod_str .. ms
         end
-        mod_internal(total_mod_str, 'PlayerNumber_P1')
     end
 
-    -- now do the same thing but player 2
-    mods_this_frame = {}
-    local p2toremove = {}
-    for i, mod in ipairs(currently_active_mods_2) do
-        if beat > mod[5] then
-            if mod[3] == "XMod" or mod[3] == "CMod" or mod[3] == "MMod" then
-                if mod[3] == "XMod" then
-                    table.insert(mods_this_frame, '*999999 ' .. mod[2] / 100 .. string.sub(mod[3], 1, 1))
-                else
-                    table.insert(mods_this_frame, '*999999 ' .. string.sub(mod[3], 1, 1) .. mod[2])
-                end
-            else
-                applyplayeractormod(mod[2], mod[3], P2)
-                if mod[3] ~= "x" then
-                    table.insert(mods_this_frame, '*999999 ' .. mod[2] .. ' ' .. mod[3])
-                end
-            end
-            table.insert(p2toremove, i)
+    --xmod cmod mmod exception
+    if mod == "XMod" then
+        if poptions[plr]:XMod() == nil then
+            return poptions[plr]:CMod() / 100
         else
-            local t = beat - (mod[5] - mod[1])
-            local b = mod[7]
-            local c = mod[2] - mod[7]
-            local d = mod[1]
-            local mod_value = calculateEase(t, b, c, d, mod[4])
-            if mod[3] == "XMod" or mod[3] == "CMod" or mod[3] == "MMod" then
-                if mod[3] == "XMod" then
-                    table.insert(mods_this_frame, '*999999 ' .. mod_value / 100 .. string.sub(mod[3], 1, 1))
-                else
-                    table.insert(mods_this_frame, '*999999 ' .. string.sub(mod[3], 1, 1) .. mod_value)
-                end
-            else
-                applyplayeractormod(mod_value, mod[3], P2)
-                if mod[3] ~= "x" then
-                    table.insert(mods_this_frame, '*999999 ' .. mod_value .. ' ' .. mod[3])
-                end
-            end
+            return poptions[plr]:XMod() * 100
+        end
+    elseif mod == "CMod" then
+        --fix conversion
+        if poptions[plr]:CMod() == nil then
+            return poptions[plr]:XMod() * 100
+        else
+            return poptions[plr]:CMod()
+        end
+    elseif mod == "MMod" then
+        -- can't be bothered with mmod who uses it
+        if poptions[plr]:MMod() == nil then
+            return 100
+        else
+            return poptions[plr]:MMod() * 100
         end
     end
-    if #p2toremove > 0 then
-        table.sort(p2toremove, function(a, b)
-            return a > b
-        end)
-        for i, remove in ipairs(p2toremove) do
-            table.remove(currently_active_mods_2, remove)
-        end
-    end
-    if #mods_this_frame > 0 then
-        local total_mod_str = ""
-        for i, ms in ipairs(mods_this_frame) do
-            if #total_mod_str > 0 then
-                total_mod_str = total_mod_str .. ", "
-            end
-            total_mod_str = total_mod_str .. ms
-        end
-        mod_internal(total_mod_str, 'PlayerNumber_P2')
-    end
+    return 0
 end
 
 function mod(a)
@@ -526,6 +402,7 @@ function mod(a)
     end
     table.insert(mods, a)
 end
+
 function action(a)
     if #a < 2 then
         msg("Couldn't register action! Too few arguments.")
@@ -536,10 +413,26 @@ function action(a)
         return
     end
     if type(a[2]) ~= "function" then
-        msg("Couldn't register actio! Second argument is not a function!")
+        msg("Couldn't register action! Second argument is not a function!")
         return
     end
     table.insert(actions, a)
+end
+
+function perframe(t)
+    if #t < 3 then
+        msg("Couldn't register perframe! Too few arguments.")
+        return
+    end
+    if type(t[1]) ~= "number" or type(t[2]) ~= "number" then
+        msg("Couldn't register perframe! Beat arguments are not numbers!")
+        return
+    end
+    if type(t[3]) ~= "function" then
+        msg("Couldn't register perframe! Third argument is not a function!")
+        return
+    end
+    table.insert(perframes, t)
 end
 
 local function modtable_compare(a, b)
@@ -560,133 +453,23 @@ on('update', function()
     -- insert mods into currently_active_mods
     while curmod <= #mods and beat >= mods[curmod][1] do
         for i, mod in ipairs(mods[curmod][3]) do
-            local mod_to_insert = mod
-            table.insert(mod_to_insert, mods[curmod][1] + mod[1])
-
-            local poptionsp1 = GAMESTATE:GetPlayerState(0):GetPlayerOptions('ModsLevel_Song')
-            local poptionsp2 = GAMESTATE:GetPlayerState(1):GetPlayerOptions('ModsLevel_Song')
-            local p1value = 0
-            for i, c in ipairs(GAMESTATE:GetPlayerState(0):GetPlayerOptionsArray("ModsLevel_Song")) do
-                if (not (string.find(string.lower(c), string.lower(mod[3])) == nil)) then
-                    if (string.match(string.lower(c), string.lower(mod[3]) .. ".") == nil) then
-                        if not (string.match(string.lower(c), "(%-?%d+)%%") == nil) then
-                            p1value = string.match(string.lower(c), "(%-?%d+)%%")
-                        else
-                            p1value = 100
-                        end
-                    end
-                end
-            end
-            local p2value = 0
-            for i, c in ipairs(GAMESTATE:GetPlayerState(1):GetPlayerOptionsArray("ModsLevel_Song")) do
-                if (not (string.find(string.lower(c), string.lower(mod[3])) == nil)) then
-                    if (string.match(string.lower(c), string.lower(mod[3]) .. ".") == nil) then
-                        if not (string.match(string.lower(c), "(%-?%d+)%%") == nil) then
-                            p2value = string.match(string.lower(c), "(%-?%d+)%%")
-                        else
-                            p2value = 100
-                        end
-                    end
-                end
-            end
-
-            check = {'RotationX', 'RotationY', 'RotationZ', 'X', 'Y', 'Zoom', 'ZoomX', 'ZoomY', 'ZoomZ'}
-            found = false;
-            for i, value in ipairs(check) do
-                if string.lower(mod[3]) == string.lower(value) then
-                    found = true
-                    if (P1 ~= nil) then
-                        table.insert(mod_to_insert, P1['Get' .. value](P1))
-                    end
-                    if (P2 ~= nil) then
-                        table.insert(mod_to_insert, P2['Get' .. value](P2))
-                    end
-                    break
-                end
-            end
-
-            if mod[3] == "XMod" then
-                if poptionsp1:XMod() == nil then
-                    table.insert(mod_to_insert, poptionsp1:CMod() / 100)
-                else
-                    table.insert(mod_to_insert, poptionsp1:XMod() * 100)
-                end
-                if poptionsp2:XMod() == nil then
-                    table.insert(mod_to_insert, poptionsp2:CMod() / 100)
-                else
-                    table.insert(mod_to_insert, poptionsp2:XMod() * 100)
-                end
-            elseif mod[3] == "CMod" then
-                if poptionsp1:CMod() == nil then
-                    table.insert(mod_to_insert, poptionsp1:XMod() * 100)
-                else
-                    table.insert(mod_to_insert, poptionsp1:CMod() * 1)
-                end
-                if poptionsp2:CMod() == nil then
-                    table.insert(mod_to_insert, poptionsp2:XMod() * 100)
-                else
-                    table.insert(mod_to_insert, poptionsp2:CMod() * 1)
-                end
-            elseif mod[3] == "MMod" then
-                -- can't be bothered with mmod who uses it
-                if poptionsp1:MMod() == nil then
-                    table.insert(mod_to_insert, 100)
-                else
-                    table.insert(mod_to_insert, poptionsp1:MMod() * 100)
-                end
-                if poptionsp2:MMod() == nil then
-                    table.insert(mod_to_insert, 100)
-                else
-                    table.insert(mod_to_insert, poptionsp2:MMod() * 100)
-                end
-            else
-                table.insert(mod_to_insert, p1value)
-                table.insert(mod_to_insert, p2value)
-            end
-            -- replace duplicates (mods with same mods that are already activated should be replaced with the newer version)
+            local mod_to_insert = {}
+            mod_to_insert.easelength = mod[1]
+            mod_to_insert.percentage = mod[2]
+            mod_to_insert.mod = mod[3]
+            mod_to_insert.ease = mod[4]
+            mod_to_insert.endeasebeat = mods[curmod][1] + mod[1]
+            mod_to_insert.currentvaluep1 = getCurrentModValue(mod[3],1)
+            mod_to_insert.currentvaluep2 = getCurrentModValue(mod[3],2)
+            mod_to_insert.startbeat = mods[curmod][1]
+            
             if mods[curmod][2] == 1 then
-                local foundDuplicate = false
-                for i, activemod in ipairs(currently_active_mods_1) do
-                    if mod[3] == activemod[3] then
-                        currently_active_mods_1[i] = mod_to_insert
-                        foundDuplicate = true
-                    end
-                end
-                if not foundDuplicate then
-                    table.insert(currently_active_mods_1, mod_to_insert)
-                end
+                currently_active_mods[1][mod[3]] = mod_to_insert
             elseif mods[curmod][2] == 2 then
-                local foundDuplicate = false
-                for i, activemod in ipairs(currently_active_mods_2) do
-                    if mod[3] == activemod[3] then
-                        currently_active_mods_2[i] = mod_to_insert
-                        foundDuplicate = true
-                    end
-                end
-                if not foundDuplicate then
-                    table.insert(currently_active_mods_2, mod_to_insert)
-                end
+                currently_active_mods[2][mod[3]] = mod_to_insert
             else
-                local foundDuplicate = false
-                for i, activemod in ipairs(currently_active_mods_1) do
-                    if mod[3] == activemod[3] then
-                        currently_active_mods_1[i] = mod_to_insert
-                        foundDuplicate = true
-                    end
-                end
-                if not foundDuplicate then
-                    table.insert(currently_active_mods_1, mod_to_insert)
-                end
-                foundDuplicate = false
-                for i, activemod in ipairs(currently_active_mods_2) do
-                    if mod[3] == activemod[3] then
-                        currently_active_mods_2[i] = mod_to_insert
-                        foundDuplicate = true
-                    end
-                end
-                if not foundDuplicate then
-                    table.insert(currently_active_mods_2, mod_to_insert)
-                end
+                currently_active_mods[1][mod[3]] = mod_to_insert
+                currently_active_mods[2][mod[3]] = mod_to_insert
             end
         end
         curmod = curmod + 1
@@ -722,15 +505,15 @@ function hideObjects()
     end
 end
 
-local mod1 = nil
-local mod2 = nil
+local modlist1 = nil
+local modlist2 = nil
 
 add(Def.BitmapText {
     Font = "Common normal",
     Text = "",
     InitCommand = function(self)
         self:visible(false):zoom(0.5):diffuse(1, 1, 1, 0.5)
-        mod1 = self
+        modlist1 = self
     end
 })
 
@@ -739,15 +522,15 @@ add(Def.BitmapText {
     Text = "",
     InitCommand = function(self)
         self:visible(false):zoom(0.5):diffuse(1, 1, 1, 0.5)
-        mod2 = self
+        modlist2 = self
     end
 })
 
 on('update', function()
-    mod1:settext(table.concat(GAMESTATE:GetPlayerState(0):GetPlayerOptionsArray('ModsLevel_Song'), "\n"))
-    mod2:settext(table.concat(GAMESTATE:GetPlayerState(1):GetPlayerOptionsArray('ModsLevel_Song'), "\n"))
-    mod1:Center():addx(-150)
-    mod2:Center():addx(150)
+    modlist1:settext(table.concat(GAMESTATE:GetPlayerState(0):GetPlayerOptionsArray('ModsLevel_Song'), "\n"))
+    modlist2:settext(table.concat(GAMESTATE:GetPlayerState(1):GetPlayerOptionsArray('ModsLevel_Song'), "\n"))
+    modlist1:Center():addx(-150)
+    modlist2:Center():addx(150)
 
     for i, perframe in ipairs(perframes) do
         if (beat > perframe[1] and beat < perframe[2]) then
@@ -757,22 +540,6 @@ on('update', function()
 end)
 
 function toggleModsListVisible(b)
-    mod1:visible(b)
-    mod2:visible(b)
-end
-
-function perframe(t)
-    if #t < 3 then
-        msg("Couldn't register perframe! Too few arguments.")
-        return
-    end
-    if type(t[1]) ~= "number" or type(t[2]) ~= "number" then
-        msg("Couldn't register perframe! Beat arguments are not numbers!")
-        return
-    end
-    if type(t[3]) ~= "function" then
-        msg("Couldn't register perframe! Third argument is not a function!")
-        return
-    end
-    table.insert(perframes, t)
+    modlist1:visible(b)
+    modlist2:visible(b)
 end

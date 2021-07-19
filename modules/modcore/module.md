@@ -3,6 +3,8 @@ This module creates the basic mod and action handler. It includes easing and all
 
 This module also has a function to hide all overlay elements and another function to display the current modlist on screen.
 
+This module uses the Tweens namespace from builds 4.9.7+!
+
 ## Usage
 
     module "modcore"
