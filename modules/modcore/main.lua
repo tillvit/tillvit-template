@@ -10,6 +10,8 @@ local mods = {}
 local curaction = 1
 local actions = {}
 local perframes = {}
+local custommods = {}
+local playermodfix = {}
 
 local modcache = {{},{}}
 
@@ -138,71 +140,9 @@ local eases = {
             return (-c * (math.sqrt(1 - math.pow(t, 2)) - 1) + b)
         end
     end,
-    inbounce=function(t, b, c, d)
-        t = d - t
-        t = t / d
-        if t < 1 / 2.75 then
-            return c - (c * (7.5625 * t * t)) + b
-        elseif t < 2 / 2.75 then
-            t = t - (1.5 / 2.75)
-            return c - (c * (7.5625 * t * t + 0.75)) + b
-        elseif t < 2.5 / 2.75 then
-            t = t - (2.25 / 2.75)
-            return c - (c * (7.5625 * t * t + 0.9375)) + b
-        else
-            t = t - (2.625 / 2.75)
-            return  c - (c * (7.5625 * t * t + 0.984375)) + b
-        end
-    end,
-    outbounce=function(t, b, c, d)
-        t = t / d
-        if t < 1 / 2.75 then
-            return c * (7.5625 * t * t) + b
-        elseif t < 2 / 2.75 then
-            t = t - (1.5 / 2.75)
-            return c * (7.5625 * t * t + 0.75) + b
-        elseif t < 2.5 / 2.75 then
-            t = t - (2.25 / 2.75)
-            return c * (7.5625 * t * t + 0.9375) + b
-        else
-            t = t - (2.625 / 2.75)
-            return c * (7.5625 * t * t + 0.984375) + b
-        end
-    end,
-    inoutbounce=function(t, b, c, d)
-        if t < d / 2 then
-            t = t * 2
-            t = d - t
-            t = t / d
-            if t < 1 / 2.75 then
-                return 0.5 * (c - (c * (7.5625 * t * t))) + b
-            elseif t < 2 / 2.75 then
-                t = t - (1.5 / 2.75)
-                return  0.5 * (c - (c * (7.5625 * t * t + 0.75))) + b
-            elseif t < 2.5 / 2.75 then
-                t = t - (2.25 / 2.75)
-                return  0.5 * (c - (c * (7.5625 * t * t + 0.9375))) + b
-            else
-                t = t - (2.625 / 2.75)
-                return  0.5 * (c - (c * (7.5625 * t * t + 0.984375))) + b
-            end
-        else
-            t = t * 2 - d
-            t = t / d
-            if t < 1 / 2.75 then
-                return (c * (7.5625 * t * t)) * 0.5 + c * .5 + b
-            elseif t < 2 / 2.75 then
-                t = t - (1.5 / 2.75)
-                return (c * (7.5625 * t * t + 0.75)) * 0.5 + c * .5 + b
-            elseif t < 2.5 / 2.75 then
-                t = t - (2.25 / 2.75)
-                return (c * (7.5625 * t * t + 0.9375)) * 0.5 + c * .5 + b
-            else
-                t = t - (2.625 / 2.75)
-                return (c * (7.5625 * t * t + 0.984375)) * 0.5 + c * .5 + b
-            end
-        end
-    end,
+    inbounce=Tweens.easeInBounce,
+    outbounce=Tweens.easeOutBounce,
+    inoutbounce=Tweens.easeInOutBounce,
     outinbounce=function(t, b, c, d)
         if t < d / 2 then
             t = t * 2
@@ -239,8 +179,12 @@ local eases = {
                 return c - (c * (7.5625 * t * t + 0.984375)) + b
             end
         end
-    end,
+    end
 }
+
+--------------------------------------------
+----------------MOD SYSTEM------------------
+--------------------------------------------
 
 local function applymod(str, pn)
     poptions[pn]:FromString(str)
@@ -248,40 +192,8 @@ end
 
 local function applyplayeractormod(value, mod, actor)
     if actor ~= nil then
-        if mod == "rotationx" then
-            actor:rotationx(value)
-            return true
-        end
-        if mod == "rotationy" then
-            actor:rotationy(value)
-            return true
-        end
-        if mod == "rotationz" then
-            actor:rotationz(value)
-            return true
-        end
-        if mod == "x" then
-            actor:x(value)
-            return true
-        end
-        if mod == "y" then
-            actor:y(value)
-            return true
-        end
-        if mod == "zoom" then
-            actor:zoom(value)
-            return true
-        end
-        if mod == "zoomx" then
-            actor:zoomx(value)
-            return true
-        end
-        if mod == "zoomy" then
-            actor:zoomy(value)
-            return true
-        end
-        if mod == "zoomz" then
-            actor:zoomz(value)
+        if actor[mod] ~= nil and type(actor[mod]) == 'function' then
+            table.insert(playermodfix,{actor,mod,value})
             return true
         end
     end
@@ -289,6 +201,11 @@ local function applyplayeractormod(value, mod, actor)
 end
 
 local function getModString(mod, percentage, player) 
+    if (custommods[mod]) then
+        modcache[player][string.lower(mod)] = percentage
+        custommods[mod](percentage, player)
+        return nil
+    end
     local perc = math.round(percentage*1000)/1000
     if mod == "XMod" or mod == "CMod" or mod == "MMod" then
         -- ew xmod cmod mmod different format ew
@@ -354,7 +271,7 @@ local function getCurrentModValue(mod, plr)
         return modcache[plr][string.lower(mod)]
     end
     
-    --find normal mod
+    --find normal mod using the yucky regex way
     for i, c in ipairs(GAMESTATE:GetPlayerState(plr-1):GetPlayerOptionsArray("ModsLevel_Song")) do
         if (not (string.find(string.lower(c), string.lower(mod)) == nil)) then
             if (string.match(string.lower(c), string.lower(mod) .. ".") == nil) then
@@ -407,7 +324,7 @@ end
 
 function mod(a)
     if #a < 3 then
-        msg("Couldn't register mod! Too few arguments.")
+        msg("Couldn't register mod! Not enough arguments.")
         return
     end
     if type(a[1]) ~= "number" then
@@ -425,9 +342,36 @@ function mod(a)
     table.insert(mods, a)
 end
 
+function imod(a)
+    if #a < 3 then
+        msg("Couldn't register mod! Not enough arguments.")
+        return
+    end
+    if type(a[1]) ~= "number" then
+        msg("Couldn't register mod! Beat argument is not a number!")
+        return
+    end
+    if type(a[2]) ~= "number" then
+        msg("Couldn't register mod! Player argument is not a number!")
+        return
+    end
+    if type(a[3]) ~= "table" then
+        msg("Couldn't register mod! Third argument is not a table!")
+        return
+    end
+    local m = {a[1],a[2],{}}
+    local m2 = {a[1]+0.05,a[2],{}}
+    for i, mod in ipairs(a[3]) do
+        table.insert(m[3],{0,mod[2],mod[4],'linear'})
+        table.insert(m2[3],{mod[1],mod[3],mod[4],mod[5]})
+    end
+    table.insert(mods, m)
+    table.insert(mods, m2)
+end
+
 function action(a)
     if #a < 2 then
-        msg("Couldn't register action! Too few arguments.")
+        msg("Couldn't register action! Not enough arguments.")
         return
     end
     if type(a[1]) ~= "number" then
@@ -443,7 +387,7 @@ end
 
 function perframe(t)
     if #t < 3 then
-        msg("Couldn't register perframe! Too few arguments.")
+        msg("Couldn't register perframe! Not enough arguments.")
         return
     end
     if type(t[1]) ~= "number" or type(t[2]) ~= "number" then
@@ -455,6 +399,22 @@ function perframe(t)
         return
     end
     table.insert(perframes, t)
+end
+
+function definemod(t) 
+    if #t < 2 then
+        msg("Couldn't register perframe! Not enough arguments.")
+        return
+    end
+    if type(t[1]) ~= "string" then
+        msg("Couldn't register perframe! Mod name isn't a string!")
+        return
+    end
+    if type(t[2]) ~= "function" then
+        msg("Couldn't register perframe! Second argument is not a function!")
+        return
+    end
+    custommods[t[1]] = t[2]
 end
 
 local function modtable_compare(a, b)
@@ -472,6 +432,13 @@ on('init', function()
 end)
 
 on('update', function()
+    for i, mod in ipairs(playermodfix) do
+        local a = mod[1]
+        local m = mod[2]
+        local v = mod[3]
+        a[m](a,v)
+    end
+    playermodfix = {}
     -- insert mods into currently_active_mods
     while curmod <= #mods and beat >= mods[curmod][1] do
         for i, mod in ipairs(mods[curmod][3]) do
@@ -508,6 +475,10 @@ on('update', function()
     end
 end)
 
+--------------------------------------------
+------------------OTHERS--------------------
+--------------------------------------------
+
 function hideObjects()
     if P1 then
         P1:GetChild("Combo"):visible(false):addx(10000):sleep(9e9)
@@ -527,6 +498,10 @@ function hideObjects()
     end
 end
 
+--------------------------------------------
+------------------MOD LIST------------------
+--------------------------------------------
+
 local modlist1 = nil
 local modlist2 = nil
 
@@ -535,6 +510,7 @@ add(Def.BitmapText {
     Text = "",
     InitCommand = function(self)
         self:visible(false):zoom(0.5):diffuse(1, 1, 1, 0.5)
+        self:Center():addx(-150)
         modlist1 = self
     end
 })
@@ -544,6 +520,7 @@ add(Def.BitmapText {
     Text = "",
     InitCommand = function(self)
         self:visible(false):zoom(0.5):diffuse(1, 1, 1, 0.5)
+        self:Center():addx(150)
         modlist2 = self
     end
 })
@@ -551,8 +528,6 @@ add(Def.BitmapText {
 on('update', function()
     modlist1:settext(table.concat(GAMESTATE:GetPlayerState(0):GetPlayerOptionsArray('ModsLevel_Song'), "\n"))
     modlist2:settext(table.concat(GAMESTATE:GetPlayerState(1):GetPlayerOptionsArray('ModsLevel_Song'), "\n"))
-    modlist1:Center():addx(-150)
-    modlist2:Center():addx(150)
 
     for i, perframe in ipairs(perframes) do
         if (beat > perframe[1] and beat < perframe[2]) then

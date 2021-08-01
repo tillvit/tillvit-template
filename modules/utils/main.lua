@@ -35,3 +35,9 @@ function range(s, e, step)
     end
     return t
 end
+
+local seed = 182943
+function random()
+    seed = (seed * 2835013 + 20759) % 7923103
+    return seed/7923103
+end

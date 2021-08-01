@@ -35,6 +35,12 @@ This module uses the Tweens namespace from builds 4.9.7+!
     mod ({8,2,{
 	    {1,2,"zoom","outSine"},
     }})
+
+    --Activate 100% drunk then ease back to 
+    --0% drunk for 0.5 beats at beat 12 for player 1.
+    imod ({12,1,{
+	    {1,100,0,"drunk","outQuad"},
+    }})
     
     --Hide P1 at beat 0
     action ({0, function()
@@ -45,6 +51,16 @@ This module uses the Tweens namespace from builds 4.9.7+!
     perframe ({0, 8, function()
 	    msg(beat)
     end})
+
+    --define the mod hide to stealth + dark
+    definemod {"hide", function(val, plr) 
+        mod {beat, plr, {{0, val, 'stealth', 'linear'},{0, val, 'dark', 'linear'}}
+    end}
+
+    --connect a mod to a variable
+    definemod {"variableA", function(val, plr) 
+        variableA = val
+    end}
     
     
 ## Dependencies

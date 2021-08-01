@@ -14,15 +14,17 @@ Modules can be imported by placing the module folder into the lua/modules folder
 
 ## Events
 To register a listener, use the `on(string event, function f)` function.
-To emit an event, use the `emit(string event)` function.
+To emit an event, use the `emit(string event, table args)` function. (args is optional)
 Predefined events include:
 
  - preinit: called on InitCommand. Use this to register any variables or functions that require InitCommand
  - init: called after preinit.
+ - postinit: called after on 
  - preon: called on OnCommand. Use this to register any variables or functions that require OnCommand (like players)
 	 - preon is used by the module common_aliases to create the variables P1 and P2
-  - on: called after preon 
-  - update: called using the updatefunction
+ - on: called after preon 
+ - poston: called after on 
+ - update: called using the updatefunction
 
 ## ActorFrame Methods
 

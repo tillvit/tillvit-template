@@ -5,12 +5,9 @@ This module will force the position of the judgement and combo sprites using Act
 
     module "comboview"
     ...
-    --Hides the judgeent and combo at beat 16
+    --Hides the judgement and combo at beat 16
     action ({16, function()
-	    p1judg:visible(false)
-	    p1combo:visible(false)
-	    p2judg:visible(false)
-	    p2combo:visible(false)
+	    combovisible = false
     end})
 
 ## Dependencies

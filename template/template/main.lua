@@ -20,10 +20,10 @@ function msg(msg)
     SCREENMAN:SystemMessage(tostring(msg))
 end
 
-function emit(event) 
+function emit(event, args) 
     if listener[event] then
         for i, func in ipairs(listener[event]) do
-            func()
+            func(unpack(args or {}))
         end
     end
 end
@@ -65,12 +65,14 @@ function load(file)
 end
 
 local function init_command(self) 
+    af = self
     emit 'preinit'
     emit 'init'
+    emit 'postinit'
 end
 
-local function update() 
-    emit 'update'
+local function update(self, delta) 
+    emit ('update',{delta})
     for key, value in pairs(continuous) do
         tillvit[key] = value()
     end
@@ -82,11 +84,17 @@ local function on_command(self)
     self:fov(90);
     self:SetDrawByZPosition(true)
     self:SetUpdateFunction(update)
+    self:sleep(0.1):queuecommand("Ready")
 end
 
+local function ready_command(self)
+    emit 'ready'
+end
+af = nil
 af = Def.ActorFrame {
     InitCommand=init_command;
     OnCommand=on_command;
+    ReadyCommand=ready_command;
     Def.Quad{
         InitCommand= function(self)
             self:visible(false)
