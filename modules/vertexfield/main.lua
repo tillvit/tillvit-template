@@ -1,6 +1,7 @@
 dependency({"common_aliases"}, "vertexfield")
 
 local uniqueaftid = 0
+local arrowoffset = (THEME:GetMetric("Player","ReceptorArrowsYStandard") + THEME:GetMetric("Player","ReceptorArrowsYReverse")) / 2
 
 VertexField = {
     bonedata = {},
@@ -186,12 +187,8 @@ function VertexField:DrawArrow(notedata, isReceptor)
 
     local notebeat = notedata[1]
     local column = notedata[2] + 1
-    local yoffset = 0;
     
     local ps = GAMESTATE:GetPlayerState("PlayerNumber_P" .. self.playerNum)
-
-    --jank thing on simply love????? players are offset by 10 pixels????
-    if sh == 480 then yoffset = 10 end
 
     --get position of an arrow
     local arrow = getArrowData(ps, notebeat, column, isHold)
@@ -203,7 +200,7 @@ function VertexField:DrawArrow(notedata, isReceptor)
     local rotatedbonepos = rotatePoints(self.bonedata, rotates[column] + arrow.rotz / 180 * math.pi)
     for i=1,#rotatedbonepos do
         rotatedbonepos[i][1] = (arrow.x + rotatedbonepos[i][1] * tiny * sh / 480)
-        rotatedbonepos[i][2] = (arrow.y + rotatedbonepos[i][2] * tiny * sh / 480) + yoffset
+        rotatedbonepos[i][2] = (arrow.y + rotatedbonepos[i][2] * tiny * sh / 480) + arrowoffset
         rotatedbonepos[i][3] = 0
     end
 
@@ -217,9 +214,9 @@ function VertexField:DrawArrow(notedata, isReceptor)
             local holdbeat = math.max(notebeat + math.floor((j - 1) / 2) * 0.1, beat)
             local arrow = getArrowData(ps, holdbeat, column, true) 
             if (j % 2 == 1) then
-                table.insert(holdbonepos, {arrow.x - ARROW_SIZE / 2 * tiny, arrow.y + yoffset, 0})
+                table.insert(holdbonepos, {arrow.x - ARROW_SIZE / 2 * tiny, arrow.y + arrowoffset, 0})
             else
-                table.insert(holdbonepos, {arrow.x + ARROW_SIZE / 2 * tiny, arrow.y + yoffset, 0})
+                table.insert(holdbonepos, {arrow.x + ARROW_SIZE / 2 * tiny, arrow.y + arrowoffset, 0})
             end
         end
         --pos of hold tails (starting)
@@ -227,9 +224,9 @@ function VertexField:DrawArrow(notedata, isReceptor)
             local holdbeat = math.max(notebeat + notedata.length, beat)
             local arrow = getArrowData(ps, holdbeat, column, true) 
             if (j % 2 == 1) then
-                table.insert(holdbonepos, {arrow.x - ARROW_SIZE / 2 * tiny, arrow.y + yoffset, 0})
+                table.insert(holdbonepos, {arrow.x - ARROW_SIZE / 2 * tiny, arrow.y + arrowoffset, 0})
             else
-                table.insert(holdbonepos, {arrow.x + ARROW_SIZE / 2 * tiny, arrow.y + yoffset, 0})
+                table.insert(holdbonepos, {arrow.x + ARROW_SIZE / 2 * tiny, arrow.y + arrowoffset, 0})
             end
         end
         --pos of hold tails (ending)
@@ -239,9 +236,9 @@ function VertexField:DrawArrow(notedata, isReceptor)
             local hoffset = 30
             if ps:GetPlayerOptions("ModsLevel_Song"):Reverse() > 0.5 then hoffset = -30 end
             if (j % 2 == 1) then
-                table.insert(holdbonepos, {arrow.x - ARROW_SIZE / 2 * tiny, arrow.y + yoffset + hoffset * tiny, 0})
+                table.insert(holdbonepos, {arrow.x - ARROW_SIZE / 2 * tiny, arrow.y + arrowoffset + hoffset * tiny, 0})
             else
-                table.insert(holdbonepos, {arrow.x + ARROW_SIZE / 2 * tiny, arrow.y + yoffset + hoffset * tiny, 0})
+                table.insert(holdbonepos, {arrow.x + ARROW_SIZE / 2 * tiny, arrow.y + arrowoffset + hoffset * tiny, 0})
             end
         end
     end
