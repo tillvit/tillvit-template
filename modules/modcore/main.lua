@@ -186,7 +186,7 @@ local eases = {
 ----------------MOD SYSTEM------------------
 --------------------------------------------
 
-local function applymod(str, pn)
+function applymod(str, pn)
     poptions[pn]:FromString(str)
 end
 

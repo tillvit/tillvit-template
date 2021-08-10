@@ -61,6 +61,9 @@ This module uses the Tweens namespace from builds 4.9.7+!
     definemod {"variableA", function(val, plr) 
         variableA = val
     end}
+
+    --apply a mod during playback (100% tornado for player 1)
+    applymod('*99999 100 Tornado', 1)
     
     
 ## Dependencies

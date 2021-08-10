@@ -90,11 +90,17 @@ end
 local function ready_command(self)
     emit 'ready'
 end
+
+local function end_command(self)
+    emit 'end'
+end
+
 af = nil
 af = Def.ActorFrame {
     InitCommand=init_command;
     OnCommand=on_command;
     ReadyCommand=ready_command;
+    EndCommand=end_command;
     Def.Quad{
         InitCommand= function(self)
             self:visible(false)
