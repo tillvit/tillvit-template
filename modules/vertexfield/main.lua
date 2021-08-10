@@ -187,11 +187,11 @@ function VertexField:DrawArrow(notedata, isReceptor)
     local notebeat = notedata[1]
     local column = notedata[2] + 1
     local yoffset = 0;
-
-    --jank thing on 480p themes????? still kinda broken??????????
+    
     local ps = GAMESTATE:GetPlayerState("PlayerNumber_P" .. self.playerNum)
-    if sh == 480 then if isReceptor then yoffset = 16 else yoffset = 10 end end
-    if (ps:GetPlayerOptions("ModsLevel_Song"):Reverse() > 0.5) then yoffset = 16 end
+
+    --jank thing on simply love????? players are offset by 10 pixels????
+    if sh == 480 then yoffset = 10 end
 
     --get position of an arrow
     local arrow = getArrowData(ps, notebeat, column, isHold)

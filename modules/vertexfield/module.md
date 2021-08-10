@@ -73,7 +73,7 @@ Creates a new VertexField object with the inputs in the table obj. Accepted inpu
  - receptors: Renders the receptors in the same fashion as the arrows. Defaults to false.
  
  
-   `VertexField:SetDrawSizeBackBeats(number b)`  
+`VertexField:SetDrawSizeBackBeats(number b)`  
  
 Sets the drawsizebackbeats to b
  
