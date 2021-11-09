@@ -3,7 +3,6 @@ module 'modcore'
 module 'utils'
 module 'comboview'
 
-setEditor(false)
 setBeatOffset(0)
 
 on('on', function()
@@ -11,7 +10,7 @@ on('on', function()
     toggleModsListVisible(true)
 end)
 
-mod({0, 0, {
+mod {0, 0, {
     {0, 0, 'Tiny', 'outQuad'}, 
     {0, 100, 'Beat', 'outQuad'}, 
     {0, scx, 'x', 'outQuad'}, 
@@ -23,13 +22,13 @@ mod({0, 0, {
     {0, 1, 'zoomy', 'outQuad'}, 
     {0, 1, 'zoomz', 'outQuad'},
     {0, 1, 'zoom', 'outQuad'}
-}})
+}}
 
-action({0.1, function()
+action {0.1, function()
     P1:visible(true)
     P2:visible(true)
-end})
+end}
 
-perframe({0, 8, function()
+perframe {0, 8, function()
     msg(beat)
-end})
+end}

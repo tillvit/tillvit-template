@@ -39,7 +39,7 @@ on('update', function()
     end
 end)
 
-add(Def.ActorProxy {
+addfg(Def.ActorProxy {
     InitCommand=function(self)
         p1judg = self
     end,
@@ -49,12 +49,11 @@ add(Def.ActorProxy {
         end
         self:x(sw / 4 - 10000);
         self:y(SCREEN_CENTER_Y);
-        self:visible(true)
-        self:z(3)
+        self:visible(true):draworder(100000)
     end
 })
 
-add(Def.ActorProxy {
+addfg(Def.ActorProxy {
     InitCommand=function(self)
         p2judg = self
     end,
@@ -65,10 +64,9 @@ add(Def.ActorProxy {
         self:x(sw / 4 * 3 - 10000);
         self:y(SCREEN_CENTER_Y);
         self:visible(true)
-        self:z(3)
     end
 })
-add(Def.ActorProxy {
+addfg(Def.ActorProxy {
     InitCommand=function(self)
         p1combo = self
     end,
@@ -79,11 +77,10 @@ add(Def.ActorProxy {
         self:x(sw / 4 - 10000);
         self:y(SCREEN_CENTER_Y);
         self:visible(true)
-        self:z(3)
     end
 })
 
-add(Def.ActorProxy {
+addfg(Def.ActorProxy {
     InitCommand=function(self)
         p2combo = self
     end,
@@ -94,6 +91,5 @@ add(Def.ActorProxy {
         self:x(sw / 4 * 3 - 10000);
         self:y(SCREEN_CENTER_Y);
         self:visible(true)
-        self:z(3)
     end
 })

@@ -35,13 +35,21 @@ function on(event, func)
     table.insert(listener[event], func)
 end
 
-function add(item)
-    af[#af+1]=item
+function addbg(item)
+    template_bg[#template_bg+1]=item
 end
 
-function setEditor(a) 
-    isEditor = a
+function add(item)
+    template_af[#template_af+1]=item
 end
+
+function addfg(item)
+    template_fg[#template_fg+1]=item
+end
+
+function getbg() return template_bg end
+function getaf() return template_af end
+function getfg() return template_fg end
 
 function setBeatOffset(a)
     beatOffset = a;
@@ -82,7 +90,7 @@ local function on_command(self)
     emit 'preon'
     emit 'on'
     self:fov(90);
-    self:SetDrawByZPosition(true)
+    self:SetDrawByZPosition(false)
     self:SetUpdateFunction(update)
     self:sleep(0.1):queuecommand("Ready")
 end
@@ -95,22 +103,35 @@ local function end_command(self)
     emit 'end'
 end
 
-af = nil
-af = Def.ActorFrame {
+local r = Def.ActorFrame {
     InitCommand=init_command;
     OnCommand=on_command;
     ReadyCommand=ready_command;
     EndCommand=end_command;
     Def.Quad{
-        InitCommand= function(self)
-            self:visible(false)
-        end,
-        OnCommand= function(self)
-            self:sleep(1000)
-        end,
+        InitCommand= function(self) self:visible(false) end,
+        OnCommand= function(self) self:sleep(1000) end,
     },
 }
+template_bg = Def.ActorFrame{
+    InitCommand=function(self)
+        template_bg = self
+    end
+}
+template_af = Def.ActorFrame{
+    InitCommand=function(self)
+        template_af = self
+    end
+}
+template_fg = Def.ActorFrame{
+    InitCommand=function(self)
+        template_fg = self
+    end
+}
+r[#r+1] = template_bg
+r[#r+1] = template_af
+r[#r+1] = template_fg
 
 assert(loadfile(GAMESTATE:GetCurrentSong():GetSongDir()..'lua/default.lua'))()
 
-return af
+return r

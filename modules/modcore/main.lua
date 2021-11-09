@@ -10,6 +10,7 @@ local mods = {}
 local curaction = 1
 local actions = {}
 local perframes = {}
+local perframeeases = {}
 local custommods = {}
 local playermodfix = {}
 
@@ -123,9 +124,9 @@ local eases = {
             end
         end
     end,
-    incirc=Tweens.easeInCirc,
-    outcirc=Tweens.easeOutCirc,
-    inoutcirc=Tweens.easeInOutCirc,
+    incirc=Tweens.easeInCircle,
+    outcirc=Tweens.easeOutCircle,
+    inoutcirc=Tweens.easeInOutCircle,
     outincirc=function(t,b,c,d)
         if t < d / 2 then
             t = t * 2
@@ -140,6 +141,9 @@ local eases = {
             return (-c * (math.sqrt(1 - math.pow(t, 2)) - 1) + b)
         end
     end,
+    inback=Tweens.easeInBack,
+    outback=Tweens.easeOutBack,
+    inoutback=Tweens.easeInOutBack,
     inbounce=Tweens.easeInBounce,
     outbounce=Tweens.easeOutBounce,
     inoutbounce=Tweens.easeInOutBounce,
@@ -201,21 +205,21 @@ local function applyplayeractormod(value, mod, actor)
 end
 
 local function getModString(mod, percentage, player) 
-    if (custommods[mod]) then
+    if (custommods[string.lower(mod)]) then
         modcache[player][string.lower(mod)] = percentage
-        custommods[mod](percentage, player)
+        custommods[string.lower(mod)](percentage, player)
         return nil
     end
     local perc = math.round(percentage*1000)/1000
-    if mod == "XMod" or mod == "CMod" or mod == "MMod" then
+    if mod == "xmod" or mod == "cmod" or mod == "mmod" then
         -- ew xmod cmod mmod different format ew
-        if mod == "XMod" then
+        if mod == "xmod" then
             return '*10000 ' .. perc / 100 .. "x"
         else
             return '*10000 ' .. string.sub(mod, 1, 1) .. perc
         end
     else
-        if (applyplayeractormod(perc, mod, tillvit["P"..player])) then
+        if (applyplayeractormod(perc, mod, P[player])) then
             return nil
         end
         return '*10000 ' .. perc .. ' ' .. mod
@@ -235,7 +239,7 @@ local function execute_mods()
                 local modstring = getModString(mod.mod, mod.percentage, plr)
                 if modstring then 
                     modcache[plr][string.lower(mod.mod)] = mod.percentage
-                    table.insert(mods_this_frame, modstring) 
+                    mods_this_frame[string.lower(mod.mod)] = modstring
                 end
                 currently_active_mods[plr][mod.mod] = nil
             else
@@ -248,23 +252,20 @@ local function execute_mods()
                 local modstring = getModString(mod.mod, val, plr)
                 if modstring then 
                     modcache[plr][string.lower(mod.mod)] = val
-                    table.insert(mods_this_frame, modstring) 
+                    mods_this_frame[string.lower(mod.mod)] = modstring
                 end
             end
         end
         -- concat mods on this frame and activate them
-        if #mods_this_frame > 0 then
-            local total_mod_str = ""
-            for i, ms in ipairs(mods_this_frame) do
-                if #total_mod_str > 0 then
-                    total_mod_str = total_mod_str .. ", "
-                end
-                total_mod_str = total_mod_str .. ms
-            end
-            applymod(total_mod_str, plr)
+        local total_mod_string = ""
+        for i,v in pairs(mods_this_frame) do
+            total_mod_string = total_mod_string .. v .. ","
         end
+        if total_mod_string ~= "" then applymod(total_mod_string, plr) end 
     end
 end
+
+local poparray = {GAMESTATE:GetPlayerState(0):GetPlayerOptionsArray("ModsLevel_Song"), GAMESTATE:GetPlayerState(1):GetPlayerOptionsArray("ModsLevel_Song")}
 
 local function getCurrentModValue(mod, plr) 
     if modcache[plr][string.lower(mod)] then
@@ -272,7 +273,7 @@ local function getCurrentModValue(mod, plr)
     end
     
     --find normal mod using the yucky regex way
-    for i, c in ipairs(GAMESTATE:GetPlayerState(plr-1):GetPlayerOptionsArray("ModsLevel_Song")) do
+    for i, c in ipairs(poparray[plr]) do
         if (not (string.find(string.lower(c), string.lower(mod)) == nil)) then
             if (string.match(string.lower(c), string.lower(mod) .. ".") == nil) then
                 if not (string.match(string.lower(c), "(%-?%d+)%%") == nil) then
@@ -285,7 +286,7 @@ local function getCurrentModValue(mod, plr)
     end
     
     --find player actor mod
-    local playeractor = tillvit["P"..plr]
+    local playeractor = P[plr]
     local ActorTransforms = {'RotationX', 'RotationY', 'RotationZ', 'X', 'Y', 'Zoom', 'ZoomX', 'ZoomY', 'ZoomZ'}
     for i, value in ipairs(ActorTransforms) do
         if string.lower(mod) == string.lower(value) then
@@ -339,6 +340,9 @@ function mod(a)
         msg("Couldn't register mod! Third argument is not a table!")
         return
     end
+    for i, mod in ipairs(a[3]) do
+        mod[3] = string.lower(mod[3])
+    end
     table.insert(mods, a)
 end
 
@@ -362,6 +366,7 @@ function imod(a)
     local m = {a[1],a[2],{}}
     local m2 = {a[1]+0.05,a[2],{}}
     for i, mod in ipairs(a[3]) do
+        mod[4] = string.lower(mod[4])
         table.insert(m[3],{0,mod[2],mod[4],'linear'})
         table.insert(m2[3],{mod[1],mod[3],mod[4],mod[5]})
     end
@@ -401,6 +406,15 @@ function perframe(t)
     table.insert(perframes, t)
 end
 
+
+function perframeease(t)
+    if #t < 6 then
+        msg("Couldn't register perframe! Not enough arguments.")
+        return
+    end
+    table.insert(perframeeases, t)
+end
+
 function definemod(t) 
     if #t < 2 then
         msg("Couldn't register perframe! Not enough arguments.")
@@ -414,7 +428,27 @@ function definemod(t)
         msg("Couldn't register perframe! Second argument is not a function!")
         return
     end
-    custommods[t[1]] = t[2]
+    custommods[string.lower(t[1])] = t[2]
+end
+
+function defineease(t) 
+    if #t < 2 then
+        msg("Couldn't register ease! Not enough arguments.")
+        return
+    end
+    if type(t[1]) ~= "string" then
+        msg("Couldn't register ease! Mod name isn't a string!")
+        return
+    end
+    if type(t[2]) ~= "function" then
+        msg("Couldn't register ease! Second argument is not a function!")
+        return
+    end
+    if t[2](1,2,3,4) == nil or type(t[2](1,2,3,4)) ~= "number" then 
+        msg("Couldn't register ease! Ease doesn't return a number!")
+        return
+    end
+    eases[t[1]] = t[2]
 end
 
 local function modtable_compare(a, b)
@@ -505,22 +539,24 @@ end
 local modlist1 = nil
 local modlist2 = nil
 
-add(Def.BitmapText {
+addfg(Def.BitmapText {
     Font = "Common normal",
     Text = "",
     InitCommand = function(self)
         self:visible(false):zoom(0.5):diffuse(1, 1, 1, 0.5)
         self:Center():addx(-150)
+        self:draworder(10000000)
         modlist1 = self
     end
 })
 
-add(Def.BitmapText {
+addfg(Def.BitmapText {
     Font = "Common normal",
     Text = "",
     InitCommand = function(self)
         self:visible(false):zoom(0.5):diffuse(1, 1, 1, 0.5)
         self:Center():addx(150)
+        self:draworder(10000000)
         modlist2 = self
     end
 })
@@ -528,10 +564,25 @@ add(Def.BitmapText {
 on('update', function()
     modlist1:settext(table.concat(GAMESTATE:GetPlayerState(0):GetPlayerOptionsArray('ModsLevel_Song'), "\n"))
     modlist2:settext(table.concat(GAMESTATE:GetPlayerState(1):GetPlayerOptionsArray('ModsLevel_Song'), "\n"))
-
+   
     for i, perframe in ipairs(perframes) do
         if (beat > perframe[1] and beat < perframe[2]) then
             perframe[3]()
+        end
+    end
+
+    for i, pfe in ipairs(perframeeases) do
+        if (beat > pfe[1] and beat < pfe[2]) then
+            local t = beat-pfe[1]
+            local b = pfe[3]
+            local c = pfe[4]-pfe[3]
+            local d = pfe[2]-pfe[1]
+            local ease = eases[string.lower(pfe[5])]
+                if not ease then
+                    ease = eases.linear
+                    msg("Couldn't find ease " .. pfe[5])
+                end
+            pfe[6](ease(t,b,c,d))
         end
     end
 end)
